@@ -188,7 +188,8 @@ begin
   Port   := (Sender as TShape).Tag mod 16;
 
   vstup[Module, Port] := vstup[Module, Port] XOR 1;
-  RePaintPins;
+  RePaintPins();
+  if (Assigned(LibEvents.OnInputChanged)) then LibEvents.OnInputChanged(Self, Module);
 end;
 
 procedure TFormConfig.RePaintPins;

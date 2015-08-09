@@ -3,7 +3,7 @@ unit LibraryEvents;
 interface
 
 type
-  TMyErrorEvent = function (Sender: TObject; errValue: word; errAddr: byte; errMsg:string):Integer; stdcall;
+  TMyErrorEvent = procedure (Sender: TObject; errValue: word; errAddr: byte; errMsg:string) of object; stdcall;
   TStdNotifyEvent = procedure (Sender: TObject) of object; stdcall;
   TMyModuleChangeEvent = procedure (Sender: TObject; module: byte) of object; stdcall;
 

@@ -4,7 +4,7 @@
 //  Main Library file.
 //  (c) Jan Horacek (jan.horacek@kmz-brno.cz),
 //      Michal Petrilak (engineercz@gmail.com)
-// 30.05.2015
+// 09.08.2015
 ////////////////////////////////////////////////////////////////////////////////
 
 {
@@ -79,85 +79,72 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function ShowConfigDialog(): Integer; stdcall;
+procedure ShowConfigDialog(); stdcall;
 begin
-  FormConfig.Show;
-  Result := 0;
+  FormConfig.Show();
 end;
 
-function HideConfigDialog(): Integer; stdcall;
+procedure HideConfigDialog(); stdcall;
 begin
-  FormConfig.Hide;
-  Result := 0;
-end;
-
-function ShowInfoDialog(): Integer; stdcall;
-begin
-  Result := 50;
+  FormConfig.Hide();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // This function should be called on unload:
 
-function OnUnload(): Integer; stdcall;
+procedure Unload(); stdcall;
 begin
   FormConfig.SaveData(_CFG_FILE);
   FreeAndNil(F_About);
   FreeAndNil(F_Board);
   FreeAndNil(FormConfig);
-  Result := 0;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function ShowAboutDialog(): Integer; stdcall;
+procedure ShowAboutDialog(); stdcall;
 begin
-  F_About.ShowModal;
-  Result := 50;
+  F_About.ShowModal();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Open MTB, start scanning
 
-function Open(): Integer; stdcall;
+procedure Open(); stdcall;
 begin
   if (Assigned(LibEvents.BeforeOpen)) then LibEvents.BeforeOpen(FormConfig);
   FormConfig.status := TSimulatorStatus.opening;
   ActivateTimer(FormConfig.OnOpen, 1500);
-  Result := 0;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Close MTB
 
-function Close(): Integer; stdcall;
+procedure Close(); stdcall;
 begin
   if (Assigned(LibEvents.BeforeClose)) then LibEvents.BeforeOpen(FormConfig);
   FormConfig.status := TSimulatorStatus.closing;
   ActivateTimer(FormConfig.OnClose, 500);
-  Result := 0;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Start communication
 
-function Start(): Integer; stdcall;
+procedure Start(); stdcall;
 begin
   if (Assigned(LibEvents.BeforeStart)) then LibEvents.BeforeStart(FormConfig);
   FormConfig.status := TSimulatorStatus.starting;
   ActivateTimer(FormConfig.OnStart, 500);
-  Result := 0;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Stop communication
 
-function Stop(): Integer; stdcall;
+procedure Stop(); stdcall;
 begin
   if (Assigned(LibEvents.BeforeStop)) then LibEvents.BeforeStop(FormConfig);
   FormConfig.status := TSimulatorStatus.stopping;
   ActivateTimer(FormConfig.OnStop, 500);
-  Result := 0;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -172,8 +159,10 @@ end;
 
 function SetOutput(Module, Port, State: Integer): Integer; stdcall;
 begin
+  if (vystup[Module, Port] = state) then Exit(0);
   vystup[Module, Port] := State;
-  if (Assigned(FormConfig)) then FormConfig.RepaintPins;    
+  FormConfig.RepaintPins;
+  if (Assigned(LibEvents.OnOutputChanged)) then LibEvents.OnOutputChanged(FormConfig, Module);
   Result := 0;
 end;
 
@@ -202,7 +191,7 @@ function SetInput(board:integer; input:integer; State:integer): Integer; stdcall
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function GetModuleExists(Module:integer):boolean;stdcall;
+function GetModuleExists(Module:integer):boolean; stdcall;
  begin
   if ((module >= FormConfig.pins_start) and (module <= FormConfig.pins_end)
     and (FormConfig.Status >= TSimulatorStatus.stopped)) then
@@ -211,7 +200,7 @@ function GetModuleExists(Module:integer):boolean;stdcall;
     Result := false;
  end;
 
-function GetModuleType(Module:Integer):string;stdcall;
+function GetModuleType(Module:Integer):string; stdcall;
  begin
   if ((module >= FormConfig.pins_start) and (module <= FormConfig.pins_end)
     and (FormConfig.Status >= TSimulatorStatus.stopped)) then
@@ -231,12 +220,6 @@ function GetModuleName(Module:Integer):string; stdcall;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function SaveData:Integer; stdcall;
- begin
-  FormConfig.SaveData(_CFG_FILE);
-  Result := 0;
- end;//function
-
 function GetLibVersion:string; stdcall;
  begin
   Result := _VERSION;
@@ -244,12 +227,12 @@ function GetLibVersion:string; stdcall;
 
 function GetDeviceVersion:string; stdcall;
  begin
-  Result := 'VIRTUAL';
+  Result := 'SIMULATOR';
  end;//function
 
 function GetDriverVersion:string; stdcall;
  begin
-  Result := 'VIRTUAL';
+  Result := 'SIMULATOR';
  end;//function
 
 function GetModuleFirmware(module:Integer):string; stdcall;
@@ -263,7 +246,7 @@ function GetModuleFirmware(module:Integer):string; stdcall;
 
 function SetMtbSpeed(Speed:Integer):Integer; stdcall;
  begin
-  Result := 1;
+  Result := 0;
  end;
 
 function SetModuleName(board:Integer;Name:string):Integer; stdcall;
@@ -345,7 +328,7 @@ end;//function
 // Exported functions:
 
 exports
-  OnUnload name 'onunload',
+  Unload name 'onunload',
   Start name 'start',
   Stop name 'stop',
   GetInput name 'getinput',
@@ -363,7 +346,6 @@ exports
   GetModuleName name 'getmodulename',
   SetModuleName name 'setmodulename',
   SetMtbSpeed name 'setmtbspeed',
-  SaveData name 'savedata',
   Open name 'open',
   Close name 'close',
   IsOpen name 'isopen',
