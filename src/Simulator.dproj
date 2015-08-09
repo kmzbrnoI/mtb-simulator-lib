@@ -22,12 +22,12 @@
 		<PropertyGroup Condition="'$(Base)'!=''">
 			<DCC_BplOutput>..\outunit\</DCC_BplOutput>
 			<DCC_ImageBase>00400000</DCC_ImageBase>
-			<DCC_DependencyCheckOutputName>..\output\Simulator.dll</DCC_DependencyCheckOutputName>
+			<DCC_DependencyCheckOutputName>..\..\..\..\Delphi\hJOPserver\output\Simulator.dll</DCC_DependencyCheckOutputName>
 			<DCC_UsePackage>vcl;rtl;vclx;DelphiX_for7;VclSmp;vclactnband;CPortLib7;Custom</DCC_UsePackage>
 			<DCC_IOChecking>false</DCC_IOChecking>
 			<DCC_Platform>x86</DCC_Platform>
 			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
-			<DCC_ExeOutput>..\output\</DCC_ExeOutput>
+			<DCC_ExeOutput>..\..\..\..\Delphi\hJOPserver\output\</DCC_ExeOutput>
 			<DCC_N>true</DCC_N>
 			<DCC_K>false</DCC_K>
 			<GenDll>true</GenDll>
@@ -84,7 +84,7 @@
 					<Parameters>
 						<Parameters Name="HostApplication">D:\UsersData\Vlak\Delphi\hJOPserver\output\hJOPserver.exe</Parameters>
 						<Parameters Name="UseLauncher">False</Parameters>
-						<Parameters Name="DebugCWD">D:\UsersData\Vlak\Delphi\RidiciProgram3\output</Parameters>
+						<Parameters Name="DebugCWD">D:\UsersData\Vlak\Delphi\hJOPserver\output\</Parameters>
 						<Parameters Name="LoadAllSymbols">True</Parameters>
 						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
 						<Parameters Name="RunParams">-admlog</Parameters>
@@ -94,7 +94,7 @@
 						<VersionInfo Name="AutoIncBuild">False</VersionInfo>
 						<VersionInfo Name="MajorVer">2</VersionInfo>
 						<VersionInfo Name="MinorVer">2</VersionInfo>
-						<VersionInfo Name="Release">6</VersionInfo>
+						<VersionInfo Name="Release">7</VersionInfo>
 						<VersionInfo Name="Build">0</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
@@ -107,7 +107,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName"/>
 						<VersionInfoKeys Name="FileDescription">Virtualizace MTB</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">2.2.6.0</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">2.2.7.0</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">Simulator.dll</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright">Michal Petrilak, Jan Horacek 2008-2015</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks"/>

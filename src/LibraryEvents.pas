@@ -3,20 +3,33 @@ unit LibraryEvents;
 interface
 
 type
-  TMyErrorEvent = procedure (Sender: TObject; errValue: word; errAddr: byte; errMsg:string) of object; stdcall;
-  TStdNotifyEvent = procedure (Sender: TObject) of object; stdcall;
-  TMyModuleChangeEvent = procedure (Sender: TObject; module: byte) of object; stdcall;
+  TStdNotifyEvent = procedure (Sender: TObject; data:Pointer); stdcall;
+  TStdErrorEvent = procedure (Sender: TObject; data:Pointer; errValue: word; errAddr: byte; errMsg:string); stdcall;
+  TStdModuleChangeEvent = procedure (Sender: TObject; data:Pointer; module: byte); stdcall;
+
+  TMyErrorEvent = record
+    event: TStdErrorEvent;
+    data: Pointer;
+  end;
+  TMyNotifyEvent = record
+    event: TStdNotifyEvent;
+    data: Pointer;
+  end;
+  TMyModuleChangeEvent = record
+    event: TStdModuleChangeEvent;
+    data:Pointer
+  end;
 
   TLibEvents = record
-    BeforeOpen:TStdNotifyEvent;
-    AfterOpen:TStdNotifyEvent;
-    BeforeClose:TStdNotifyEvent;
-    AfterClose:TStdNotifyEvent;
+    BeforeOpen:TMyNotifyEvent;
+    AfterOpen:TMyNotifyEvent;
+    BeforeClose:TMyNotifyEvent;
+    AfterClose:TMyNotifyEvent;
 
-    BeforeStart:TStdNotifyEvent;
-    AfterStart:TStdNotifyEvent;
-    BeforeStop:TStdNotifyEvent;
-    AfterStop:TStdNotifyEvent;
+    BeforeStart:TMyNotifyEvent;
+    AfterStart:TMyNotifyEvent;
+    BeforeStop:TMyNotifyEvent;
+    AfterStop:TMyNotifyEvent;
 
     OnError:TMyErrorEvent;
     OnInputChanged:TMyModuleChangeEvent;
@@ -29,4 +42,3 @@ var
 implementation
 
 end.
-

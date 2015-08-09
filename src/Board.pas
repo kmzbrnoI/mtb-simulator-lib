@@ -80,14 +80,24 @@ begin
  if ((Modules[OpenIndex].exists) and (Self.RG_Exists.ItemIndex = 0)) then
   begin
    // module is being non-exist
-   if (Assigned(LibEvents.OnError)) then
-    LibEvents.OnError(Self, 141, OpenIndex, '');
+   if (Assigned(LibEvents.OnError.event)) then
+    LibEvents.OnError.event(Self, LibEvents.OnError.data, 141, OpenIndex, 'Modul nekomunikuje');
+   if (Assigned(LibEvents.OnOutputChanged.event)) then
+    begin
+     LibEvents.OnOutputChanged.event(FormConfig, LibEvents.OnOutputChanged.data, OpenIndex);
+     LibEvents.OnInputChanged.event(FormConfig, LibEvents.OnOutputChanged.data, OpenIndex);
+    end;
   end;
  if ((not Modules[OpenIndex].exists) and (Self.RG_Exists.ItemIndex = 1)) then
   begin
    // module is being non-exist
-   if (Assigned(LibEvents.OnError)) then
-    LibEvents.OnError(Self, 142, OpenIndex, '');
+   if (Assigned(LibEvents.OnError.event)) then
+    LibEvents.OnError.event(Self, LibEvents.OnError.data, 142, OpenIndex, 'Modul komunikuje');
+   if (Assigned(LibEvents.OnOutputChanged.event)) then
+    begin
+     LibEvents.OnOutputChanged.event(FormConfig, LibEvents.OnOutputChanged.data, OpenIndex);
+     LibEvents.OnInputChanged.event(FormConfig, LibEvents.OnOutputChanged.data, OpenIndex);
+    end;
   end;
 
 

@@ -112,7 +112,7 @@ end;
 
 procedure Open(); stdcall;
 begin
-  if (Assigned(LibEvents.BeforeOpen)) then LibEvents.BeforeOpen(FormConfig);
+  if (Assigned(LibEvents.BeforeOpen.event)) then LibEvents.BeforeOpen.event(FormConfig, LibEvents.BeforeOpen.data);
   FormConfig.status := TSimulatorStatus.opening;
   ActivateTimer(FormConfig.OnOpen, 1500);
 end;
@@ -122,7 +122,7 @@ end;
 
 procedure Close(); stdcall;
 begin
-  if (Assigned(LibEvents.BeforeClose)) then LibEvents.BeforeOpen(FormConfig);
+  if (Assigned(LibEvents.BeforeClose.event)) then LibEvents.BeforeClose.event(FormConfig, LibEvents.BeforeClose.data);
   FormConfig.status := TSimulatorStatus.closing;
   ActivateTimer(FormConfig.OnClose, 500);
 end;
@@ -132,7 +132,7 @@ end;
 
 procedure Start(); stdcall;
 begin
-  if (Assigned(LibEvents.BeforeStart)) then LibEvents.BeforeStart(FormConfig);
+  if (Assigned(LibEvents.BeforeStart.event)) then LibEvents.BeforeStart.event(FormConfig, LibEvents.BeforeStart.data);
   FormConfig.status := TSimulatorStatus.starting;
   ActivateTimer(FormConfig.OnStart, 500);
 end;
@@ -142,7 +142,7 @@ end;
 
 procedure Stop(); stdcall;
 begin
-  if (Assigned(LibEvents.BeforeStop)) then LibEvents.BeforeStop(FormConfig);
+  if (Assigned(LibEvents.BeforeStop.event)) then LibEvents.BeforeStop.event(FormConfig, LibEvents.BeforeStop.data);
   FormConfig.status := TSimulatorStatus.stopping;
   ActivateTimer(FormConfig.OnStop, 500);
 end;
@@ -162,7 +162,7 @@ begin
   if (vystup[Module, Port] = state) then Exit(0);
   vystup[Module, Port] := State;
   FormConfig.RepaintPins;
-  if (Assigned(LibEvents.OnOutputChanged)) then LibEvents.OnOutputChanged(FormConfig, Module);
+  if (Assigned(LibEvents.OnOutputChanged.event)) then LibEvents.OnOutputChanged.event(FormConfig, LibEvents.OnOutputChanged.data, Module);
   Result := 0;
 end;
 
@@ -178,149 +178,160 @@ end;
 //  -- special function just for simulator purposes --
 
 function SetInput(board:integer; input:integer; State:integer): Integer; stdcall;
- begin
+begin
   if (State < 32) then
    begin
     Vstup[Board,Input] := state;
-    if (Assigned(FormConfig)) then FormConfig.RepaintPins;    
+    if (Assigned(FormConfig)) then FormConfig.RepaintPins;
     Result := 0;
    end else begin
-    Result := -1;   
+    Result := -1;
    end;
- end;//function
+end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 
 function GetModuleExists(Module:integer):boolean; stdcall;
- begin
+begin
   if ((module >= FormConfig.pins_start) and (module <= FormConfig.pins_end)
     and (FormConfig.Status >= TSimulatorStatus.stopped)) then
     Result := Modules[Module].exists
   else
     Result := false;
- end;
+end;
 
 function GetModuleType(Module:Integer):string; stdcall;
- begin
+begin
   if ((module >= FormConfig.pins_start) and (module <= FormConfig.pins_end)
     and (FormConfig.Status >= TSimulatorStatus.stopped)) then
     Result := Modules[Module].typ
   else
     Result := 'modul neexistuje';
- end;
+end;
 
 function GetModuleName(Module:Integer):string; stdcall;
- begin
+begin
   if ((module >= FormConfig.pins_start) and (module <= FormConfig.pins_end)
     and (FormConfig.Status >= TSimulatorStatus.stopped)) then
     Result := Modules[Module].name
   else
     Result := 'modul neexistuje';
- end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 function GetLibVersion:string; stdcall;
- begin
+begin
   Result := _VERSION;
- end;//function
+end;//function
 
 function GetDeviceVersion:string; stdcall;
- begin
-  Result := 'SIMULATOR';
- end;//function
+begin
+  Result := 'virtual';
+end;//function
 
 function GetDriverVersion:string; stdcall;
- begin
-  Result := 'SIMULATOR';
- end;//function
+begin
+  Result := 'virtual';
+end;//function
 
 function GetModuleFirmware(module:Integer):string; stdcall;
- begin
+begin
   if ((module >= FormConfig.pins_start) and (module <= FormConfig.pins_end)
     and (FormConfig.Status >= TSimulatorStatus.stopped)) then
     Result := Modules[module].fw
   else
     Result := 'modul neexistuje';
- end;//function
+end;//function
 
 function SetMtbSpeed(Speed:Integer):Integer; stdcall;
- begin
+begin
   Result := 0;
- end;
+end;
 
 function SetModuleName(board:Integer;Name:string):Integer; stdcall;
- begin
+begin
   if (board <= _MAX_MTB) then Modules[board].name := Name;
   Result := 0;
- end;
+end;
 
 function IsOpen():Boolean; stdcall;
- begin
+begin
   Result := (FormConfig.Status = TSimulatorStatus.stopped) or (FormConfig.Status = TSimulatorStatus.running);
- end;//function
+end;//function
 
 function IsStart():Boolean; stdcall;
- begin
+begin
   Result := (FormConfig.Status = TSimulatorStatus.running);
- end;//function
+end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 // ----- setting events begin -----
 
-procedure SetBeforeOpen(ptr:TStdNotifyEvent); stdcall;
+procedure SetBeforeOpen(event:TStdNotifyEvent; data:Pointer); stdcall;
 begin
- LibEvents.BeforeOpen := ptr;
+  LibEvents.BeforeOpen.data  := data;
+  LibEvents.BeforeOpen.event := event;
 end;//function
 
-procedure SetAfterOpen(ptr:TStdNotifyEvent); stdcall;
+procedure SetAfterOpen(event:TStdNotifyEvent; data:Pointer); stdcall;
 begin
- LibEvents.AfterOpen := ptr;
+  LibEvents.AfterOpen.data  := data;
+  LibEvents.AfterOpen.event := event;
 end;//function
 
-procedure SetBeforeClose(ptr:TStdNotifyEvent); stdcall;
+procedure SetBeforeClose(event:TStdNotifyEvent; data:Pointer); stdcall;
 begin
- LibEvents.BeforeClose := ptr;
-end;//procedure
-
-procedure SetAfterClose(ptr:TStdNotifyEvent); stdcall;
-begin
- LibEvents.AfterClose := ptr;
-end;//procedure
-
-procedure SetBeforeStart(ptr:TStdNotifyEvent); stdcall;
-begin
- LibEvents.BeforeStart := ptr;
-end;//procedure
-
-procedure SetAfterStart(ptr:TStdNotifyEvent); stdcall;
-begin
- LibEvents.AfterStart := ptr;
-end;//procedure
-
-procedure SetBeforeStop(ptr:TStdNotifyEvent); stdcall;
-begin
- LibEvents.BeforeStop := ptr;
-end;//procedure
-
-procedure SetAfterStop(ptr:TStdNotifyEvent); stdcall;
-begin
- LibEvents.AfterStop := ptr;
-end;//procedure
-
-procedure SetOnError(ptr:TMyErrorEvent); stdcall;
-begin
- LibEvents.OnError := ptr;
-end;//procedure
-
-procedure SetOnInputChange(ptr:TMyModuleChangeEvent); stdcall;
-begin
- LibEvents.OnInputChanged := ptr;
+  LibEvents.BeforeClose.data  := data;
+  LibEvents.BeforeClose.event := event;
 end;//function
 
-procedure SetOnOutputChange(ptr:TMyModuleChangeEvent); stdcall;
+procedure SetAfterClose(event:TStdNotifyEvent; data:Pointer); stdcall;
 begin
- LibEvents.OnOutputChanged := ptr;
+  LibEvents.AfterClose.data  := data;
+  LibEvents.AfterClose.event := event;
+end;//function
+
+procedure SetBeforeStart(event:TStdNotifyEvent; data:Pointer); stdcall;
+begin
+  LibEvents.BeforeStart.data  := data;
+  LibEvents.BeforeStart.event := event;
+end;//function
+
+procedure SetAfterStart(event:TStdNotifyEvent; data:Pointer); stdcall;
+begin
+  LibEvents.AfterStart.data  := data;
+  LibEvents.AfterStart.event := event;
+end;//function
+
+procedure SetBeforeStop(event:TStdNotifyEvent; data:Pointer); stdcall;
+begin
+  LibEvents.BeforeStop.data  := data;
+  LibEvents.BeforeStop.event := event;
+end;//function
+
+procedure SetAfterStop(event:TStdNotifyEvent; data:Pointer); stdcall;
+begin
+  LibEvents.AfterStop.data  := data;
+  LibEvents.AfterStop.event := event;
+end;//function
+
+procedure SetOnError(event:TStdErrorEvent; data:Pointer); stdcall;
+begin
+  LibEvents.OnError.data  := data;
+  LibEvents.OnError.event := event;
+end;//function
+
+procedure SetOnInputChange(event:TStdModuleChangeEvent; data:Pointer); stdcall;
+begin
+  LibEvents.OnInputChanged.data  := data;
+  LibEvents.OnInputChanged.event := event;
+end;//function
+
+procedure SetOnOutputChange(event:TStdModuleChangeEvent; data:Pointer); stdcall;
+begin
+  LibEvents.OnOutputChanged.data  := data;
+  LibEvents.OnOutputChanged.event := event;
 end;//function
 
 // ----- setting events end -----
@@ -373,5 +384,5 @@ begin
   Application.CreateForm(TFormConfig, FormConfig);
   Application.CreateForm(TF_About, F_About);
   Application.CreateForm(TF_Board, F_Board);
-  end.
+end.
 

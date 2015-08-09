@@ -189,7 +189,7 @@ begin
 
   vstup[Module, Port] := vstup[Module, Port] XOR 1;
   RePaintPins();
-  if (Assigned(LibEvents.OnInputChanged)) then LibEvents.OnInputChanged(Self, Module);
+  if (Assigned(LibEvents.OnInputChanged.event)) then LibEvents.OnInputChanged.event(Self, LibEvents.OnInputChanged.data, Module);
 end;
 
 procedure TFormConfig.RePaintPins;
@@ -288,8 +288,8 @@ end;//procedure
 
 procedure TFormConfig.B_ErrorClick(Sender: TObject);
 begin
- if (Assigned(LibEvents.OnError)) then
-  LibEvents.OnError(Self, Self.SE_Err_id.Value, Self.SE_Err_board.Value, '');
+ if (Assigned(LibEvents.OnError.event)) then
+  LibEvents.OnError.event(Self, LibEvents.OnError.data, Self.SE_Err_id.Value, Self.SE_Err_board.Value, '');
 end;
 
 procedure TFormConfig.CfgBtnOnClick(Sender:TObject);
@@ -324,28 +324,28 @@ procedure TFormConfig.OnOpen(Sender:TObject);
 begin
   (Sender as TTimer).Enabled := false;
   status := TSimulatorStatus.stopped;
-  if (Assigned(LibEvents.AfterOpen)) then LibEvents.AfterOpen(FormConfig);
+  if (Assigned(LibEvents.AfterOpen.event)) then LibEvents.AfterOpen.event(FormConfig, LibEvents.AfterOpen.data);
 end;//procedure
 
 procedure TFormConfig.OnClose(Sender:TObject);
 begin
   (Sender as TTimer).Enabled := false;
   status := TSimulatorStatus.closed;
-  if (Assigned(LibEvents.AfterClose)) then LibEvents.AfterClose(FormConfig);
+  if (Assigned(LibEvents.AfterClose.event)) then LibEvents.AfterClose.event(FormConfig, LibEvents.AfterClose.data);
 end;//procedure
 
 procedure TFormConfig.OnStart(Sender:TObject);
 begin
   (Sender as TTimer).Enabled := false;
   status := TSimulatorStatus.running;
-  if (Assigned(LibEvents.AfterStart)) then LibEvents.AfterStart(FormConfig);
+  if (Assigned(LibEvents.AfterStart.event)) then LibEvents.AfterStart.event(FormConfig, LibEvents.AfterStart.data);
 end;//procedure
 
 procedure TFormConfig.OnStop(Sender:TObject);
 begin
   (Sender as TTimer).Enabled := false;
   status := TSimulatorStatus.stopped;
-  if (Assigned(LibEvents.AfterStop)) then LibEvents.AfterStop(FormConfig);
+  if (Assigned(LibEvents.AfterStop.event)) then LibEvents.AfterStop.event(FormConfig, LibEvents.AfterStop.data);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
