@@ -45,26 +45,11 @@ const
   _MAX_MTB = 255;
 
 type
-  TMyEvent  = function(Sender:TObject):Integer; stdcall;
-  TMyErrorEvent = function (Sender: TObject; errValue: word; errAddr: byte; errStr:string):Integer; stdcall;
+  TMyEvent  = function(Sender:TObject):Integer of object; stdcall;
+  TMyErrorEvent = function (Sender: TObject; errValue: word; errAddr: byte; errStr:string):Integer of object; stdcall;
 
   // Simulation status:
   TSimulatorStatus = (closed = 0, opening = 1, closing = 2, stopped = 3, starting = 4, running = 5, stopping = 6);
-
-  // Events
-  TPrgEvents = record
-    prgBeforeOpen:TMyEvent;
-    prgAfterOpen:TMyEvent;
-    prgBeforeClose:TMyEvent;
-    prgAfterClose:TMyEvent;
-
-    prgBeforeStart:TMyEvent;
-    prgAfterStart:TMyEvent;
-    prgBeforeStop:TMyEvent;
-    prgAfterStop:TMyEvent;
-
-    prgError:TMyErrorEvent;
-  end;
 
   // One MTB module
   TModule = record
@@ -101,7 +86,6 @@ type
     procedure SetStatus(new:TSimulatorStatus);
   public
 
-   PrgEvents:TPrgEvents;
    pins_start:Integer;
    pins_end:Integer;
 
@@ -129,7 +113,7 @@ var
 
 implementation
 
-uses Board;
+uses Board, LibraryEvents;
 
 {$R *.dfm}
 
@@ -303,8 +287,8 @@ end;//procedure
 
 procedure TFormConfig.B_ErrorClick(Sender: TObject);
 begin
- if (Assigned(Self.PrgEvents.prgError)) then
-  Self.PrgEvents.prgError(Self, Self.SE_Err_id.Value, Self.SE_Err_board.Value, '');
+ if (Assigned(LibEvents.OnError)) then
+  LibEvents.OnError(Self, Self.SE_Err_id.Value, Self.SE_Err_board.Value, '');
 end;
 
 procedure TFormConfig.CfgBtnOnClick(Sender:TObject);
@@ -339,28 +323,28 @@ procedure TFormConfig.OnOpen(Sender:TObject);
 begin
   (Sender as TTimer).Enabled := false;
   status := TSimulatorStatus.stopped;
-  if (Assigned(FormConfig.PrgEvents.prgAfterOpen)) then FormConfig.PrgEvents.prgAfterOpen(FormConfig);
+  if (Assigned(LibEvents.AfterOpen)) then LibEvents.AfterOpen(FormConfig);
 end;//procedure
 
 procedure TFormConfig.OnClose(Sender:TObject);
 begin
   (Sender as TTimer).Enabled := false;
   status := TSimulatorStatus.closed;
-  if (Assigned(FormConfig.PrgEvents.prgAfterClose)) then FormConfig.PrgEvents.prgAfterClose(FormConfig);
+  if (Assigned(LibEvents.AfterClose)) then LibEvents.AfterClose(FormConfig);
 end;//procedure
 
 procedure TFormConfig.OnStart(Sender:TObject);
 begin
   (Sender as TTimer).Enabled := false;
   status := TSimulatorStatus.running;
-  if (Assigned(FormConfig.PrgEvents.prgAfterStart)) then FormConfig.PrgEvents.prgAfterStart(FormConfig);
+  if (Assigned(LibEvents.AfterStart)) then LibEvents.AfterStart(FormConfig);
 end;//procedure
 
 procedure TFormConfig.OnStop(Sender:TObject);
 begin
   (Sender as TTimer).Enabled := false;
   status := TSimulatorStatus.stopped;
-  if (Assigned(FormConfig.PrgEvents.prgAfterStop)) then FormConfig.PrgEvents.prgAfterStop(FormConfig);
+  if (Assigned(LibEvents.AfterStop)) then LibEvents.AfterStop(FormConfig);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

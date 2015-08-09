@@ -65,7 +65,7 @@ var
 
 implementation
 
-uses fConfig;
+uses fConfig, LibraryEvents;
 
 {$R *.dfm}
 
@@ -80,14 +80,14 @@ begin
  if ((Modules[OpenIndex].exists) and (Self.RG_Exists.ItemIndex = 0)) then
   begin
    // module is being non-exist
-   if (Assigned(FormConfig.PrgEvents.prgError)) then
-    FormConfig.PrgEvents.prgError(Self, 141, OpenIndex, '');
+   if (Assigned(LibEvents.OnError)) then
+    LibEvents.OnError(Self, 141, OpenIndex, '');
   end;
  if ((not Modules[OpenIndex].exists) and (Self.RG_Exists.ItemIndex = 1)) then
   begin
    // module is being non-exist
-   if (Assigned(FormConfig.PrgEvents.prgError)) then
-    FormConfig.PrgEvents.prgError(Self, 142, OpenIndex, '');
+   if (Assigned(LibEvents.OnError)) then
+    LibEvents.OnError(Self, 142, OpenIndex, '');
   end;
 
 

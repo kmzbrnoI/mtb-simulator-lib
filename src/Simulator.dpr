@@ -58,7 +58,8 @@ uses
   Classes,
   fConfig in 'fConfig.pas' {FormConfig},
   About in 'About.pas' {F_About},
-  Board in 'Board.pas' {F_Board};
+  Board in 'Board.pas' {F_Board},
+  LibraryEvents in 'LibraryEvents.pas';
 
 {$R *.res}
 
@@ -120,7 +121,7 @@ end;
 
 function Open(): Integer; stdcall;
 begin
-  if (Assigned(FormConfig.PrgEvents.prgBeforeOpen)) then FormConfig.PrgEvents.prgBeforeOpen(FormConfig);
+  if (Assigned(LibEvents.BeforeOpen)) then LibEvents.BeforeOpen(FormConfig);
   FormConfig.status := TSimulatorStatus.opening;
   ActivateTimer(FormConfig.OnOpen, 1500);
   Result := 0;
@@ -131,7 +132,7 @@ end;
 
 function Close(): Integer; stdcall;
 begin
-  if (Assigned(FormConfig.PrgEvents.prgBeforeClose)) then FormConfig.PrgEvents.prgBeforeOpen(FormConfig);
+  if (Assigned(LibEvents.BeforeClose)) then LibEvents.BeforeOpen(FormConfig);
   FormConfig.status := TSimulatorStatus.closing;
   ActivateTimer(FormConfig.OnClose, 500);
   Result := 0;
@@ -142,7 +143,7 @@ end;
 
 function Start(): Integer; stdcall;
 begin
-  if (Assigned(FormConfig.PrgEvents.prgBeforeStart)) then FormConfig.PrgEvents.prgBeforeStart(FormConfig);
+  if (Assigned(LibEvents.BeforeStart)) then LibEvents.BeforeStart(FormConfig);
   FormConfig.status := TSimulatorStatus.starting;
   ActivateTimer(FormConfig.OnStart, 500);
   Result := 0;
@@ -153,7 +154,7 @@ end;
 
 function Stop(): Integer; stdcall;
 begin
-  if (Assigned(FormConfig.PrgEvents.prgBeforeStop)) then FormConfig.PrgEvents.prgBeforeStop(FormConfig);
+  if (Assigned(LibEvents.BeforeStop)) then LibEvents.BeforeStop(FormConfig);
   FormConfig.status := TSimulatorStatus.stopping;
   ActivateTimer(FormConfig.OnStop, 500);
   Result := 0;
@@ -174,6 +175,13 @@ begin
   vystup[Module, Port] := State;
   if (Assigned(FormConfig)) then FormConfig.RepaintPins;    
   Result := 0;
+end;
+
+function GetOutput(Module, Port: Integer): Integer; stdcall;
+begin
+ if ((port < 0) or (port > 15)) then Exit(-2);
+ if (not Modules[Module].exists) then Exit(-2);
+ Result := vystup[Module, port];
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -277,58 +285,59 @@ function IsStart():Boolean; stdcall;
 ////////////////////////////////////////////////////////////////////////////////
 // ----- setting events begin -----
 
-function SetBeforeOpen(ptr:TMyEvent):Integer; stdcall;
+procedure SetBeforeOpen(ptr:TStdNotifyEvent); stdcall;
 begin
- FormConfig.PrgEvents.prgBeforeOpen := ptr;
- Result := 0;
+ LibEvents.BeforeOpen := ptr;
 end;//function
 
-function SetAfterOpen(ptr:TMyEvent):Integer; stdcall;
+procedure SetAfterOpen(ptr:TStdNotifyEvent); stdcall;
 begin
- FormConfig.PrgEvents.prgAfterOpen := ptr;
- Result := 0;
+ LibEvents.AfterOpen := ptr;
 end;//function
 
-function SetBeforeClose(ptr:TMyEvent):Integer; stdcall;
+procedure SetBeforeClose(ptr:TStdNotifyEvent); stdcall;
 begin
- FormConfig.PrgEvents.prgBeforeClose := ptr;
- Result := 0;
+ LibEvents.BeforeClose := ptr;
+end;//procedure
+
+procedure SetAfterClose(ptr:TStdNotifyEvent); stdcall;
+begin
+ LibEvents.AfterClose := ptr;
+end;//procedure
+
+procedure SetBeforeStart(ptr:TStdNotifyEvent); stdcall;
+begin
+ LibEvents.BeforeStart := ptr;
+end;//procedure
+
+procedure SetAfterStart(ptr:TStdNotifyEvent); stdcall;
+begin
+ LibEvents.AfterStart := ptr;
+end;//procedure
+
+procedure SetBeforeStop(ptr:TStdNotifyEvent); stdcall;
+begin
+ LibEvents.BeforeStop := ptr;
+end;//procedure
+
+procedure SetAfterStop(ptr:TStdNotifyEvent); stdcall;
+begin
+ LibEvents.AfterStop := ptr;
+end;//procedure
+
+procedure SetOnError(ptr:TMyErrorEvent); stdcall;
+begin
+ LibEvents.OnError := ptr;
+end;//procedure
+
+procedure SetOnInputChange(ptr:TMyModuleChangeEvent); stdcall;
+begin
+ LibEvents.OnInputChanged := ptr;
 end;//function
 
-function SetAfterClose(ptr:TMyEvent):Integer; stdcall;
+procedure SetOnOutputChange(ptr:TMyModuleChangeEvent); stdcall;
 begin
- FormConfig.PrgEvents.prgAfterClose := ptr;
- Result := 0;
-end;//function
-
-function SetBeforeStart(ptr:TMyEvent):Integer; stdcall;
-begin
- FormConfig.PrgEvents.prgBeforeStart := ptr;
- Result := 0;
-end;//function
-
-function SetAfterStart(ptr:TMyEvent):Integer; stdcall;
-begin
- FormConfig.PrgEvents.prgAfterStart := ptr;
- Result := 0;
-end;//function
-
-function SetBeforeStop(ptr:TMyEvent):Integer; stdcall;
-begin
- FormConfig.PrgEvents.prgBeforeStop := ptr;
- Result := 0;
-end;//function
-
-function SetAfterStop(ptr:TMyEvent):Integer; stdcall;
-begin
- FormConfig.PrgEvents.prgAfterStop := ptr;
- Result := 0;
-end;//function
-
-function SetOnError(ptr:TMyErrorEvent):Integer; stdcall;
-begin
- FormConfig.PrgEvents.prgError := ptr;
- Result := 0;
+ LibEvents.OnOutputChanged := ptr;
 end;//function
 
 // ----- setting events end -----
@@ -341,6 +350,7 @@ exports
   Stop name 'stop',
   GetInput name 'getinput',
   SetOutput name 'setoutput',
+  GetOutput name 'getoutput',
   ShowConfigDialog name 'showconfigdialog',
   HideConfigDialog name 'hideconfigdialog',
   ShowAboutDialog name 'showaboutdialog',
@@ -369,6 +379,8 @@ exports
   SetBeforeStop name 'setbeforestop',
   SetAfterStop name 'setafterstop',
   SetOnError name 'setonerror',
+  SetOnInputChange name 'setoninputchange',
+  SetOnOutputChange name 'setonoutputchange',
 
   SetInput name 'setinput';
 
@@ -379,5 +391,5 @@ begin
   Application.CreateForm(TFormConfig, FormConfig);
   Application.CreateForm(TF_About, F_About);
   Application.CreateForm(TF_Board, F_Board);
-end.
+  end.
 
