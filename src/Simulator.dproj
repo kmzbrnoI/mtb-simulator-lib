@@ -22,12 +22,12 @@
 		<PropertyGroup Condition="'$(Base)'!=''">
 			<DCC_BplOutput>..\outunit\</DCC_BplOutput>
 			<DCC_ImageBase>00400000</DCC_ImageBase>
-			<DCC_DependencyCheckOutputName>..\..\..\..\Delphi\hJOPserver\output\Simulator.dll</DCC_DependencyCheckOutputName>
+			<DCC_DependencyCheckOutputName>..\output\Simulator.dll</DCC_DependencyCheckOutputName>
 			<DCC_UsePackage>vcl;rtl;vclx;DelphiX_for7;VclSmp;vclactnband;CPortLib7;Custom</DCC_UsePackage>
 			<DCC_IOChecking>false</DCC_IOChecking>
 			<DCC_Platform>x86</DCC_Platform>
 			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
-			<DCC_ExeOutput>..\..\..\..\Delphi\hJOPserver\output\</DCC_ExeOutput>
+			<DCC_ExeOutput>..\output\</DCC_ExeOutput>
 			<DCC_N>true</DCC_N>
 			<DCC_K>false</DCC_K>
 			<GenDll>true</GenDll>
