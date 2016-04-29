@@ -151,6 +151,7 @@ end;
 
 function GetInput(Module, Port: Integer): Integer; stdcall;
 begin
+ if (FormConfig.Status <> TSimulatorStatus.running) then Exit(-1);
  if ((port < 0) or (port > 15)) then Exit(-2);
  if (not Modules[Module].exists) then Exit(-2);
 
@@ -168,6 +169,7 @@ end;
 
 function GetOutput(Module, Port: Integer): Integer; stdcall;
 begin
+ if (FormConfig.Status <> TSimulatorStatus.running) then Exit(-1);
  if ((port < 0) or (port > 15)) then Exit(-2);
  if (not Modules[Module].exists) then Exit(-2);
  Result := vystup[Module, port];
