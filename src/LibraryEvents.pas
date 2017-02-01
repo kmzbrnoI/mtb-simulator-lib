@@ -4,7 +4,8 @@ interface
 
 type
   TStdNotifyEvent = procedure (Sender: TObject; data:Pointer); stdcall;
-  TStdErrorEvent = procedure (Sender: TObject; data:Pointer; errValue: word; errAddr: byte; errMsg:string); stdcall;
+  TStdLogEvent = procedure (Sender: TObject; data:Pointer; logLevel:Integer; msg:PChar); stdcall;
+  TStdErrorEvent = procedure (Sender: TObject; data:Pointer; errValue: word; errAddr: byte; errMsg:PChar); stdcall;
   TStdModuleChangeEvent = procedure (Sender: TObject; data:Pointer; module: byte); stdcall;
 
   TMyErrorEvent = record

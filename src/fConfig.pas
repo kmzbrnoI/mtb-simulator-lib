@@ -170,6 +170,8 @@ end;
 procedure TFormConfig.FormDestroy(Sender: TObject);
 var i,j:Integer;
 begin
+ Self.SaveData(_CFG_FILE);
+
  for i := 0 to _MAX_MTB do
   begin
    if (Assigned(Self.Cfgbtn[i])) then FreeAndNil(Self.Cfgbtn[i]);
@@ -349,5 +351,10 @@ begin
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
+
+initialization
+
+finalization
+  FreeAndNil(FormConfig);
 
 end.

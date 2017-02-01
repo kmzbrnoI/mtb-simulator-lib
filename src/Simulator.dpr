@@ -10,7 +10,7 @@
 {
    LICENSE:
 
-   Copyright 2015 Michal Petrilak, Jan Horacek
+   Copyright 2015-2017 Michal Petrilak, Jan Horacek
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -57,7 +57,6 @@ uses
   Forms,
   Classes,
   fConfig in 'fConfig.pas' {FormConfig},
-  About in 'About.pas' {F_About},
   Board in 'Board.pas' {F_Board},
   LibraryEvents in 'LibraryEvents.pas';
 
@@ -78,6 +77,32 @@ begin
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
+// configurations files load/save
+
+function LoadConfig(filename:PChar):Integer; stdcall;
+begin
+
+end;
+
+function SaveConfig(filename:PChar):Integer; stdcall;
+begin
+
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+// logging
+
+procedure SetLogLevel(loglevel:Cardinal); stdcall;
+begin
+
+end;
+
+function GetLogLevel():Cardinal; stdcall;
+begin
+
+end;
+
+////////////////////////////////////////////////////////////////////////////////
 
 procedure ShowConfigDialog(); stdcall;
 begin
@@ -90,47 +115,39 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
-// This function should be called on unload:
-
-procedure Unload(); stdcall;
-begin
-  FormConfig.SaveData(_CFG_FILE);
-  FreeAndNil(F_About);
-  FreeAndNil(F_Board);
-  FreeAndNil(FormConfig);
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure ShowAboutDialog(); stdcall;
-begin
-  F_About.ShowModal();
-end;
-
-////////////////////////////////////////////////////////////////////////////////
 // Open MTB, start scanning
 
-procedure Open(); stdcall;
+function Open():Integer; stdcall;
 begin
   if (Assigned(LibEvents.BeforeOpen.event)) then LibEvents.BeforeOpen.event(FormConfig, LibEvents.BeforeOpen.data);
   FormConfig.status := TSimulatorStatus.opening;
   ActivateTimer(FormConfig.OnOpen, 1500);
 end;
 
+function OpenDevice(device:PChar; persist:boolean):Integer; stdcall;
+begin
+
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Close MTB
 
-procedure Close(); stdcall;
+function Close():Integer; stdcall;
 begin
   if (Assigned(LibEvents.BeforeClose.event)) then LibEvents.BeforeClose.event(FormConfig, LibEvents.BeforeClose.data);
   FormConfig.status := TSimulatorStatus.closing;
   ActivateTimer(FormConfig.OnClose, 500);
 end;
 
+function Opened():boolean; stdcall;
+begin
+
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Start communication
 
-procedure Start(); stdcall;
+function Start():Integer; stdcall;
 begin
   if (Assigned(LibEvents.BeforeStart.event)) then LibEvents.BeforeStart.event(FormConfig, LibEvents.BeforeStart.data);
   FormConfig.status := TSimulatorStatus.starting;
@@ -140,16 +157,21 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // Stop communication
 
-procedure Stop(); stdcall;
+function Stop():Integer; stdcall;
 begin
   if (Assigned(LibEvents.BeforeStop.event)) then LibEvents.BeforeStop.event(FormConfig, LibEvents.BeforeStop.data);
   FormConfig.status := TSimulatorStatus.stopping;
   ActivateTimer(FormConfig.OnStop, 500);
 end;
 
+function Started():boolean; stdcall;
+begin
+
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 
-function GetInput(Module, Port: Integer): Integer; stdcall;
+function GetInput(module, port: Cardinal): Integer; stdcall;
 begin
  if (FormConfig.Status <> TSimulatorStatus.running) then Exit(-1);
  if ((port < 0) or (port > 15)) then Exit(-2);
@@ -158,7 +180,7 @@ begin
   Result := vstup[Module, Port];
 end;
 
-function SetOutput(Module, Port, State: Integer): Integer; stdcall;
+function SetOutput(module, port: Cardinal; state: Integer): Integer; stdcall;
 begin
   if (vystup[Module, Port] = state) then Exit(0);
   vystup[Module, Port] := State;
@@ -167,7 +189,7 @@ begin
   Result := 0;
 end;
 
-function GetOutput(Module, Port: Integer): Integer; stdcall;
+function GetOutput(module, port: Cardinal): Integer; stdcall;
 begin
  if (FormConfig.Status <> TSimulatorStatus.running) then Exit(-1);
  if ((port < 0) or (port > 15)) then Exit(-2);
@@ -179,11 +201,11 @@ end;
 // Set input:
 //  -- special function just for simulator purposes --
 
-function SetInput(board:integer; input:integer; State:integer): Integer; stdcall;
+function SetInput(module, port: Cardinal; state: Integer): Integer; stdcall;
 begin
   if (State < 32) then
    begin
-    Vstup[Board,Input] := state;
+    Vstup[module,port] := state;
     if (Assigned(FormConfig)) then FormConfig.RepaintPins;
     Result := 0;
    end else begin
@@ -193,7 +215,19 @@ end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function GetModuleExists(Module:integer):boolean; stdcall;
+function GetDeviceCount():Integer; stdcall;
+begin
+
+end;
+
+procedure GetDeviceSerial(index:Integer; serial:PChar; serialLen:Cardinal); stdcall;
+begin
+
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function IsModule(module:Cardinal):Boolean; stdcall;
 begin
   if ((module >= FormConfig.pins_start) and (module <= FormConfig.pins_end)
     and (FormConfig.Status >= TSimulatorStatus.stopped)) then
@@ -202,7 +236,17 @@ begin
     Result := false;
 end;
 
-function GetModuleType(Module:Integer):string; stdcall;
+function IsModuleFailure(module:Cardinal):Boolean; stdcall;
+begin
+
+end;
+
+function GetModuleCount():Cardinal; stdcall;
+begin
+
+end;
+
+function GetModuleType(Module:Cardinal):Integer; stdcall;
 begin
   if ((module >= FormConfig.pins_start) and (module <= FormConfig.pins_end)
     and (FormConfig.Status >= TSimulatorStatus.stopped)) then
@@ -211,7 +255,7 @@ begin
     Result := 'modul neexistuje';
 end;
 
-function GetModuleName(Module:Integer):string; stdcall;
+function GetModuleName(module:Cardinal; name:PChar; nameLen:Cardinal):Integer; stdcall;
 begin
   if ((module >= FormConfig.pins_start) and (module <= FormConfig.pins_end)
     and (FormConfig.Status >= TSimulatorStatus.stopped)) then
@@ -220,171 +264,129 @@ begin
     Result := 'modul neexistuje';
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-
-function GetLibVersion:string; stdcall;
-begin
-  Result := _VERSION;
-end;//function
-
-function GetDeviceVersion:string; stdcall;
-begin
-  Result := 'virtual';
-end;//function
-
-function GetDriverVersion:string; stdcall;
-begin
-  Result := 'virtual';
-end;//function
-
-function GetModuleFirmware(module:Integer):string; stdcall;
+function GetModuleFW(module:Cardinal; fw:PChar; fwLen:Cardinal):Integer; stdcall;
 begin
   if ((module >= FormConfig.pins_start) and (module <= FormConfig.pins_end)
     and (FormConfig.Status >= TSimulatorStatus.stopped)) then
     Result := Modules[module].fw
   else
     Result := 'modul neexistuje';
-end;//function
-
-function SetMtbSpeed(Speed:Integer):Integer; stdcall;
-begin
-  Result := 0;
 end;
 
-function SetModuleName(board:Integer;Name:string):Integer; stdcall;
-begin
-  if (board <= _MAX_MTB) then Modules[board].name := Name;
-  Result := 0;
-end;
+////////////////////////////////////////////////////////////////////////////////
 
-function IsOpen():Boolean; stdcall;
+function GetDeviceVersion(version:PChar; versionLen:Cardinal):Integer; stdcall;
 begin
-  Result := (FormConfig.Status = TSimulatorStatus.stopped) or (FormConfig.Status = TSimulatorStatus.running);
+  Result := 'virtual';
 end;//function
 
-function IsStart():Boolean; stdcall;
+procedure GetDriverVersion(version:PChar; versionLen:Cardinal) stdcall;
 begin
-  Result := (FormConfig.Status = TSimulatorStatus.running);
+  Result := 'virtual';
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 // ----- setting events begin -----
 
-procedure SetBeforeOpen(event:TStdNotifyEvent; data:Pointer); stdcall;
+procedure BindBeforeOpen(event:TStdNotifyEvent; data:Pointer); stdcall;
 begin
   LibEvents.BeforeOpen.data  := data;
   LibEvents.BeforeOpen.event := event;
 end;//function
 
-procedure SetAfterOpen(event:TStdNotifyEvent; data:Pointer); stdcall;
+procedure BindAfterOpen(event:TStdNotifyEvent; data:Pointer); stdcall;
 begin
   LibEvents.AfterOpen.data  := data;
   LibEvents.AfterOpen.event := event;
 end;//function
 
-procedure SetBeforeClose(event:TStdNotifyEvent; data:Pointer); stdcall;
+procedure BindBeforeClose(event:TStdNotifyEvent; data:Pointer); stdcall;
 begin
   LibEvents.BeforeClose.data  := data;
   LibEvents.BeforeClose.event := event;
 end;//function
 
-procedure SetAfterClose(event:TStdNotifyEvent; data:Pointer); stdcall;
+procedure BindAfterClose(event:TStdNotifyEvent; data:Pointer); stdcall;
 begin
   LibEvents.AfterClose.data  := data;
   LibEvents.AfterClose.event := event;
 end;//function
 
-procedure SetBeforeStart(event:TStdNotifyEvent; data:Pointer); stdcall;
+procedure BindBeforeStart(event:TStdNotifyEvent; data:Pointer); stdcall;
 begin
   LibEvents.BeforeStart.data  := data;
   LibEvents.BeforeStart.event := event;
 end;//function
 
-procedure SetAfterStart(event:TStdNotifyEvent; data:Pointer); stdcall;
+procedure BindAfterStart(event:TStdNotifyEvent; data:Pointer); stdcall;
 begin
   LibEvents.AfterStart.data  := data;
   LibEvents.AfterStart.event := event;
 end;//function
 
-procedure SetBeforeStop(event:TStdNotifyEvent; data:Pointer); stdcall;
+procedure BindBeforeStop(event:TStdNotifyEvent; data:Pointer); stdcall;
 begin
   LibEvents.BeforeStop.data  := data;
   LibEvents.BeforeStop.event := event;
 end;//function
 
-procedure SetAfterStop(event:TStdNotifyEvent; data:Pointer); stdcall;
+procedure BindAfterStop(event:TStdNotifyEvent; data:Pointer); stdcall;
 begin
   LibEvents.AfterStop.data  := data;
   LibEvents.AfterStop.event := event;
 end;//function
 
-procedure SetOnError(event:TStdErrorEvent; data:Pointer); stdcall;
+procedure BindOnError(event:TStdErrorEvent; data:Pointer); stdcall;
 begin
   LibEvents.OnError.data  := data;
   LibEvents.OnError.event := event;
 end;//function
 
-procedure SetOnInputChange(event:TStdModuleChangeEvent; data:Pointer); stdcall;
+procedure BindOnLog(event:TStdLogEvent; data:Pointer); stdcall;
+begin
+
+end;
+
+procedure BindOnInputChanged(event:TStdModuleChangeEvent; data:Pointer); stdcall;
 begin
   LibEvents.OnInputChanged.data  := data;
   LibEvents.OnInputChanged.event := event;
 end;//function
 
-procedure SetOnOutputChange(event:TStdModuleChangeEvent; data:Pointer); stdcall;
+procedure BindOnOutputChanged(event:TStdModuleChangeEvent; data:Pointer); stdcall;
 begin
   LibEvents.OnOutputChanged.data  := data;
   LibEvents.OnOutputChanged.event := event;
 end;//function
+
+procedure BindOnScanned(event:TStdNotifyEvent; data:Pointer); stdcall;
+begin
+
+end;
 
 // ----- setting events end -----
 ////////////////////////////////////////////////////////////////////////////////
 // Exported functions:
 
 exports
-  Unload name 'onunload',
-  Start name 'start',
-  Stop name 'stop',
-  GetInput name 'getinput',
-  SetOutput name 'setoutput',
-  GetOutput name 'getoutput',
-  ShowConfigDialog name 'showconfigdialog',
-  HideConfigDialog name 'hideconfigdialog',
-  ShowAboutDialog name 'showaboutdialog',
-  GetDriverVersion name 'getdriverversion',
-  GetLibVersion name 'getlibversion',
-  GetDeviceVersion name 'getdeviceversion',
-  GetModuleFirmware name 'getmodulefirmware',
-  GetModuleExists name 'getmoduleexists',
-  GetModuleType name 'getmoduletype',
-  GetModuleName name 'getmodulename',
-  SetModuleName name 'setmodulename',
-  SetMtbSpeed name 'setmtbspeed',
-  Open name 'open',
-  Close name 'close',
-  IsOpen name 'isopen',
-  IsStart name 'isstart',
-
-  //events
-  SetBeforeOpen name 'setbeforeopen',
-  SetAfterOpen name 'setafteropen',
-  SetBeforeClose name 'setbeforeclose',
-  SetAfterClose name 'setafterclose',
-  SetBeforeStart name 'setbeforestart',
-  SetAfterStart name 'setafterstart',
-  SetBeforeStop name 'setbeforestop',
-  SetAfterStop name 'setafterstop',
-  SetOnError name 'setonerror',
-  SetOnInputChange name 'setoninputchange',
-  SetOnOutputChange name 'setonoutputchange',
-
-  SetInput name 'setinput';
+  LoadConfig, SaveConfig,
+  SetLogLevel, GetLogLevel,
+  ShowConfigDialog, HideConfigDialog,
+  Open, OpenDevice, Close, Opened, Start, Stop, Started,
+  GetInput, GetOutput, SetOutput,
+  GetDeviceCount, GetDeviceSerial,
+  IsModule, IsModuleFailure, GetModuleCount, GetModuleType, GetModuleName, GetModuleFW,
+  GetDeviceVersion, GetDriverVersion,
+  BindBeforeOpen, BindAfterOpen, BindBeforeClose, BindAfterClose,
+  BindBeforeStart, BindAfterStart, BindBeforeStop, BindAfterStop,
+  BindOnError, BindOnLog, BindOnInputChanged, BindOnOutputChanged,
+  BindOnScanned, SetInput;
 
 
 begin
   t_event := TTimer.Create(nil);
   t_event.Enabled := false;
   Application.CreateForm(TFormConfig, FormConfig);
-  Application.CreateForm(TF_About, F_About);
   Application.CreateForm(TF_Board, F_Board);
-end.
+  end.
 

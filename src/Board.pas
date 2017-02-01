@@ -140,4 +140,9 @@ begin
  Self.Close();
 end;//procedure
 
+initialization
+
+finalization
+  FreeAndNil(F_Board);
+
 end.//unit

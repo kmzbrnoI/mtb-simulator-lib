@@ -53,9 +53,6 @@
 			<DCCReference Include="fConfig.pas">
 				<Form>FormConfig</Form>
 			</DCCReference>
-			<DCCReference Include="About.pas">
-				<Form>F_About</Form>
-			</DCCReference>
 			<DCCReference Include="Board.pas">
 				<Form>F_Board</Form>
 			</DCCReference>
