@@ -41,7 +41,7 @@ uses
   Dialogs, ExtCtrls, IniFiles, Menus, StdCtrls, Spin;
 
 const
-  _CFG_FILE = 'mtb/data/simcfg.ini';        // Config file. Change MTB ranges to make form more synoptic.
+  _CFG_FILE = 'mtb/simcfg.ini';        // Config file. Change MTB ranges to make form more synoptic.
   _MAX_MTB = 255;
 
 type
@@ -137,7 +137,7 @@ begin
   try
     Self.LoadData(_CFG_FILE);
   except
-    // TODO
+
   end;
 
   for i := Self.pins_start to Self.pins_end do begin
@@ -183,7 +183,7 @@ begin
  try
    Self.SaveData(_CFG_FILE);
  except
-   // TODO
+
  end;
 
  for i := 0 to _MAX_MTB do
@@ -266,7 +266,6 @@ var Ini:TMemIniFile;
 begin
  // Hard-written directories
  if (not DirectoryExists('mtb')) then CreateDir('mtb');
- if (not DirectoryExists('mtb/data')) then CreateDir('mtb/data');
 
  DeleteFile(filename);
  Ini := TMemIniFile.Create(filename);

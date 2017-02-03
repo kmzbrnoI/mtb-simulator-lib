@@ -57,6 +57,7 @@ uses
   Windows,
   Forms,
   Classes,
+  IniFiles,
   fConfig in 'fConfig.pas' {FormConfig},
   Board in 'Board.pas' {F_Board},
   LibraryEvents in 'LibraryEvents.pas',
@@ -90,8 +91,10 @@ begin
    FormConfig.LoadData(filename);
    Result := 0;
  except
-   on E:Exception do // TODO: handle file excepton and general exception separately
+   on E:EIniFileException do
      Result := MTB_FILE_CANNOT_ACCESS;
+   on E:Exception do
+     Result := MTB_GENERAL_EXCEPTION;
  end;
 end;
 
@@ -101,8 +104,10 @@ begin
    FormConfig.SaveData(filename);
    Result := 0;
  except
-   on E:Exception do // TODO: handle file excepton and general exception separately
+   on E:EIniFileException do
      Result := MTB_FILE_CANNOT_ACCESS;
+   on E:Exception do
+     Result := MTB_GENERAL_EXCEPTION;
  end;
 end;
 
@@ -170,7 +175,8 @@ begin
   if (FormConfig.Status < TSimulatorStatus.stopped) then
     Exit(MTB_NOT_OPENED);
 
-  // TODO: raise MTB_SCANNING_NOT_FINISHED?
+  if (FormConfig.Status = TSimulatorStatus.starting) then
+    Exit(MTB_SCANNING_NOT_FINISHED);
 
   try
     if (Assigned(LibEvents.BeforeClose.event)) then LibEvents.BeforeClose.event(FormConfig, LibEvents.BeforeClose.data);
@@ -191,16 +197,24 @@ end;
 // Start communication
 
 function Start():Integer; stdcall;
+var i, cnt:Cardinal;
 begin
   if (FormConfig.Status > TSimulatorStatus.stopped) then
     Exit(MTB_ALREADY_STARTED);
 
-  // TODO: MTB_NO_MODULES
+  cnt := 0;
+  for i := FormConfig.pins_start to FormConfig.pins_end do
+    if (Modules[i].exists) then
+      Inc(cnt);
+
+  if (cnt = 0) then
+    Exit(MTB_NO_MODULES);
+
+  if (FormConfig.Status = TSimulatorStatus.opening) then
+    Exit(MTB_SCANNING_NOT_FINISHED);
 
   if (FormConfig.Status < TSimulatorStatus.stopped) then
     Exit(MTB_NOT_OPENED);
-
-  // TODO: MTB_SCANNING_NOT_FINISHED
 
   try
     if (Assigned(LibEvents.BeforeStart.event)) then LibEvents.BeforeStart.event(FormConfig, LibEvents.BeforeStart.data);
