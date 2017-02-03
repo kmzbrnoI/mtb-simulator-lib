@@ -148,9 +148,13 @@ end;
 // Open MTB, start scanning
 
 function Open():Integer; stdcall;
+var i:Integer;
 begin
   if (FormConfig.Status > TSimulatorStatus.closed) then
     Exit(MTB_ALREADY_OPENNED);
+
+  for i := FormConfig.pins_start to FormConfig.pins_end do
+    Modules[i].failure := false;
 
   try
     if (Assigned(LibEvents.BeforeOpen.event)) then LibEvents.BeforeOpen.event(FormConfig, LibEvents.BeforeOpen.data);
