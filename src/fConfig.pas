@@ -48,15 +48,19 @@ type
   TMyEvent  = function(Sender:TObject):Integer of object; stdcall;
   TMyErrorEvent = function (Sender: TObject; errValue: word; errAddr: byte; errStr:string):Integer of object; stdcall;
 
+  TModulType = (idNone = $0, idMTB_POT_ID = $10, idMTB_REGP_ID = $30, idMTB_UNI_ID = $40,
+        idMTB_UNIOUT_ID = $50, idMTB_TTL_ID = $60, idMTB_TTLOUT_ID = $70);
+
   // Simulation status:
   TSimulatorStatus = (closed = 0, opening = 1, closing = 2, stopped = 3, starting = 4, running = 5, stopping = 6);
 
   // One MTB module
   TModule = record
     name:string;
-    typ:string;
+    typ:TModulType;
     fw:string;
     exists:boolean;
+    failure:boolean;
   end;
 
   // Form
@@ -86,12 +90,12 @@ type
     procedure SetStatus(new:TSimulatorStatus);
   public
 
-   pins_start:Integer;
-   pins_end:Integer;
+   pins_start:Cardinal;
+   pins_end:Cardinal;
 
     procedure RePaintPins();
 
-    function LoadData(filename:string):Integer;
+    procedure LoadData(filename:string);
     procedure SaveData(filename:string);
 
     procedure OnOpen(Sender:TObject);
@@ -126,9 +130,13 @@ end;
 
 procedure TFormConfig.FormCreate(Sender: TObject);
 var
-  i, j: integer;
+  i, j: Cardinal;
 begin
-  Self.LoadData(_CFG_FILE);
+  try
+    Self.LoadData(_CFG_FILE);
+  except
+    // TODO
+  end;
 
   for i := Self.pins_start to Self.pins_end do begin
     Cfgbtn[i] := TButton.Create(FormConfig);
@@ -170,7 +178,11 @@ end;
 procedure TFormConfig.FormDestroy(Sender: TObject);
 var i,j:Integer;
 begin
- Self.SaveData(_CFG_FILE);
+ try
+   Self.SaveData(_CFG_FILE);
+ except
+   // TODO
+ end;
 
  for i := 0 to _MAX_MTB do
   begin
@@ -220,19 +232,14 @@ begin
   Caption := Format('%.3d / %.3d', [Module, Port])
 end;
 
-function TFormConfig.LoadData(filename:string):Integer;
+procedure TFormConfig.LoadData(filename:string);
 var Ini:TMemIniFile;
     i:Integer;
 begin
  Self.pins_start := 0;     // default value
  Self.pins_end   := 31;
 
- try
-   Ini := TMemIniFile.Create(filename);
- except
-   Result := 1;
-   Exit;
- end;
+ Ini := TMemIniFile.Create(filename);
 
  Self.pins_start := ini.ReadInteger('MTB', 'start', 0);
  Self.pins_end   := ini.ReadInteger('MTB', 'end', 31);
@@ -243,13 +250,12 @@ begin
  for i := 0 to _MAX_MTB do
   begin
    Modules[i].name   := Ini.ReadString('MTB'+IntToStr(i),'name','Simulator'+IntToStr(i));
-   Modules[i].typ    := Ini.ReadString('MTB'+IntToStr(i),'typ','simulator');
+   Modules[i].typ    := TModulType(Ini.ReadInteger('MTB'+IntToStr(i),'typ', Integer(idMTB_UNI_ID)));
    Modules[i].fw     := Ini.ReadString('MTB'+IntToStr(i),'fw','VIRTUAL');
    Modules[i].exists := Ini.ReadBool('MTB'+IntToStr(i),'is',true);
   end;
 
  Ini.Free;
- Result := 0;
 end;//function
 
 procedure TFormConfig.SaveData(filename:string);
@@ -260,12 +266,8 @@ begin
  if (not DirectoryExists('mtb')) then CreateDir('mtb');
  if (not DirectoryExists('mtb/data')) then CreateDir('mtb/data');
 
- try
-   DeleteFile(filename);
-   Ini := TMemIniFile.Create(filename);
- except
-   Exit;
- end;
+ DeleteFile(filename);
+ Ini := TMemIniFile.Create(filename);
 
  ini.WriteInteger('MTB', 'start', Self.pins_start);
  ini.WriteInteger('MTB', 'end', Self.pins_end);
@@ -273,7 +275,7 @@ begin
  for i := 0 to _MAX_MTB do
   begin
    Ini.WriteString('MTB'+IntToStr(i),'name',Modules[i].name);
-   Ini.WriteString('MTB'+IntToStr(i),'typ',Modules[i].typ);
+   Ini.WriteInteger('MTB'+IntToStr(i),'typ', Integer(Modules[i].typ));
    Ini.WriteString('MTB'+IntToStr(i),'fw',Modules[i].fw);
    Ini.WriteBool('MTB'+IntToStr(i),'is',Modules[i].exists);
   end;
@@ -340,6 +342,7 @@ procedure TFormConfig.OnStart(Sender:TObject);
 begin
   (Sender as TTimer).Enabled := false;
   status := TSimulatorStatus.running;
+  F_Board.RG_Failure.Enabled := true;
   if (Assigned(LibEvents.AfterStart.event)) then LibEvents.AfterStart.event(FormConfig, LibEvents.AfterStart.data);
 end;//procedure
 
@@ -347,6 +350,7 @@ procedure TFormConfig.OnStop(Sender:TObject);
 begin
   (Sender as TTimer).Enabled := false;
   status := TSimulatorStatus.stopped;
+  F_Board.RG_Exists.Enabled := true;
   if (Assigned(LibEvents.AfterStop.event)) then LibEvents.AfterStop.event(FormConfig, LibEvents.AfterStop.data);
 end;//procedure
 

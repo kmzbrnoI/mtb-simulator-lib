@@ -47,6 +47,7 @@
   are called to TForm_config (there is no technology class in the project).
 }
 
+// JCL_DEBUG_EXPERT_INSERTJDBG OFF
 library Simulator;
 
 uses
@@ -58,7 +59,8 @@ uses
   Classes,
   fConfig in 'fConfig.pas' {FormConfig},
   Board in 'Board.pas' {F_Board},
-  LibraryEvents in 'LibraryEvents.pas';
+  LibraryEvents in 'LibraryEvents.pas',
+  Errors in 'Errors.pas';
 
 {$R *.res}
 
@@ -81,12 +83,27 @@ end;//procedure
 
 function LoadConfig(filename:PChar):Integer; stdcall;
 begin
+ if (FormConfig.Status > TSimulatorStatus.closed) then
+   Exit(MTB_FILE_DEVICE_OPENED);
 
+ try
+   FormConfig.LoadData(filename);
+   Result := 0;
+ except
+   on E:Exception do // TODO: handle file excepton and general exception separately
+     Result := MTB_FILE_CANNOT_ACCESS;
+ end;
 end;
 
 function SaveConfig(filename:PChar):Integer; stdcall;
 begin
-
+ try
+   FormConfig.SaveData(filename);
+   Result := 0;
+ except
+   on E:Exception do // TODO: handle file excepton and general exception separately
+     Result := MTB_FILE_CANNOT_ACCESS;
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -99,19 +116,27 @@ end;
 
 function GetLogLevel():Cardinal; stdcall;
 begin
-
+ Result := 0;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure ShowConfigDialog(); stdcall;
 begin
-  FormConfig.Show();
+  try
+    FormConfig.Show();
+  finally
+
+  end;
 end;
 
 procedure HideConfigDialog(); stdcall;
 begin
-  FormConfig.Hide();
+  try
+    FormConfig.Hide();
+  finally
+
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -119,14 +144,22 @@ end;
 
 function Open():Integer; stdcall;
 begin
-  if (Assigned(LibEvents.BeforeOpen.event)) then LibEvents.BeforeOpen.event(FormConfig, LibEvents.BeforeOpen.data);
-  FormConfig.status := TSimulatorStatus.opening;
-  ActivateTimer(FormConfig.OnOpen, 1500);
+  if (FormConfig.Status > TSimulatorStatus.closed) then
+    Exit(MTB_ALREADY_OPENNED);
+
+  try
+    if (Assigned(LibEvents.BeforeOpen.event)) then LibEvents.BeforeOpen.event(FormConfig, LibEvents.BeforeOpen.data);
+    FormConfig.status := TSimulatorStatus.opening;
+    ActivateTimer(FormConfig.OnOpen, 1500);
+    Result := 0;
+  except
+    Result := MTB_GENERAL_EXCEPTION;
+  end;
 end;
 
 function OpenDevice(device:PChar; persist:boolean):Integer; stdcall;
 begin
-
+  Result := Open();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -134,14 +167,24 @@ end;
 
 function Close():Integer; stdcall;
 begin
-  if (Assigned(LibEvents.BeforeClose.event)) then LibEvents.BeforeClose.event(FormConfig, LibEvents.BeforeClose.data);
-  FormConfig.status := TSimulatorStatus.closing;
-  ActivateTimer(FormConfig.OnClose, 500);
+  if (FormConfig.Status < TSimulatorStatus.stopped) then
+    Exit(MTB_NOT_OPENED);
+
+  // TODO: raise MTB_SCANNING_NOT_FINISHED?
+
+  try
+    if (Assigned(LibEvents.BeforeClose.event)) then LibEvents.BeforeClose.event(FormConfig, LibEvents.BeforeClose.data);
+    FormConfig.status := TSimulatorStatus.closing;
+    ActivateTimer(FormConfig.OnClose, 500);
+    Result := 0;
+  except
+    Result := MTB_GENERAL_EXCEPTION;
+  end;
 end;
 
 function Opened():boolean; stdcall;
 begin
-
+  Result := (FormConfig.Status >= TSimulatorStatus.stopped)
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -149,9 +192,26 @@ end;
 
 function Start():Integer; stdcall;
 begin
-  if (Assigned(LibEvents.BeforeStart.event)) then LibEvents.BeforeStart.event(FormConfig, LibEvents.BeforeStart.data);
-  FormConfig.status := TSimulatorStatus.starting;
-  ActivateTimer(FormConfig.OnStart, 500);
+  if (FormConfig.Status > TSimulatorStatus.stopped) then
+    Exit(MTB_ALREADY_STARTED);
+
+  // TODO: MTB_NO_MODULES
+
+  if (FormConfig.Status < TSimulatorStatus.stopped) then
+    Exit(MTB_NOT_OPENED);
+
+  // TODO: MTB_SCANNING_NOT_FINISHED
+
+  try
+    if (Assigned(LibEvents.BeforeStart.event)) then LibEvents.BeforeStart.event(FormConfig, LibEvents.BeforeStart.data);
+    FormConfig.status := TSimulatorStatus.starting;
+    F_Board.RG_Exists.Enabled := false;
+    F_Board.RG_Failure.Enabled := false;
+    ActivateTimer(FormConfig.OnStart, 500);
+    Result := 0;
+  except
+    Result := MTB_GENERAL_EXCEPTION;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -159,14 +219,23 @@ end;
 
 function Stop():Integer; stdcall;
 begin
-  if (Assigned(LibEvents.BeforeStop.event)) then LibEvents.BeforeStop.event(FormConfig, LibEvents.BeforeStop.data);
-  FormConfig.status := TSimulatorStatus.stopping;
-  ActivateTimer(FormConfig.OnStop, 500);
+  if (FormConfig.Status < TSimulatorStatus.running) then
+    Exit(MTB_NOT_STARTED);
+
+  try
+    if (Assigned(LibEvents.BeforeStop.event)) then LibEvents.BeforeStop.event(FormConfig, LibEvents.BeforeStop.data);
+    FormConfig.status := TSimulatorStatus.stopping;
+    F_Board.RG_Failure.Enabled := false;
+    ActivateTimer(FormConfig.OnStop, 500);
+    Result := 0;
+  except
+    Result := MTB_GENERAL_EXCEPTION;
+  end;
 end;
 
 function Started():boolean; stdcall;
 begin
-
+  Result := (FormConfig.Status = TSimulatorStatus.running);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -174,7 +243,7 @@ end;
 function GetInput(module, port: Cardinal): Integer; stdcall;
 begin
  if (FormConfig.Status <> TSimulatorStatus.running) then Exit(-1);
- if ((port < 0) or (port > 15)) then Exit(-2);
+ if (port > 15) then Exit(-2);
  if (not Modules[Module].exists) then Exit(-2);
 
   Result := vstup[Module, Port];
@@ -192,7 +261,7 @@ end;
 function GetOutput(module, port: Cardinal): Integer; stdcall;
 begin
  if (FormConfig.Status <> TSimulatorStatus.running) then Exit(-1);
- if ((port < 0) or (port > 15)) then Exit(-2);
+ if (port > 15) then Exit(-2);
  if (not Modules[Module].exists) then Exit(-2);
  Result := vystup[Module, port];
 end;
@@ -217,12 +286,13 @@ end;//function
 
 function GetDeviceCount():Integer; stdcall;
 begin
-
+ Result := 1;
 end;
 
 procedure GetDeviceSerial(index:Integer; serial:PChar; serialLen:Cardinal); stdcall;
 begin
-
+ if (index = 0) then
+   StrPLCopy(serial, 'SIM DEVICE', serialLen);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -238,51 +308,71 @@ end;
 
 function IsModuleFailure(module:Cardinal):Boolean; stdcall;
 begin
-
+  if ((module >= FormConfig.pins_start) and (module <= FormConfig.pins_end)
+    and (FormConfig.Status >= TSimulatorStatus.stopped)) then
+    Result := Modules[Module].failure
+  else
+    Result := false;
 end;
 
 function GetModuleCount():Cardinal; stdcall;
+var i, cnt:Cardinal;
 begin
+ cnt := 0;
 
+ for i := FormConfig.pins_start to FormConfig.pins_end do
+   if (Modules[i].exists) then
+     Inc(cnt);
+
+ Result := cnt;
 end;
 
 function GetModuleType(Module:Cardinal):Integer; stdcall;
 begin
   if ((module >= FormConfig.pins_start) and (module <= FormConfig.pins_end)
     and (FormConfig.Status >= TSimulatorStatus.stopped)) then
-    Result := Modules[Module].typ
+    Result := Integer(Modules[Module].typ)
   else
-    Result := 'modul neexistuje';
+    Result := MTB_MODULE_INVALID_ADDR;
 end;
 
 function GetModuleName(module:Cardinal; name:PChar; nameLen:Cardinal):Integer; stdcall;
 begin
   if ((module >= FormConfig.pins_start) and (module <= FormConfig.pins_end)
     and (FormConfig.Status >= TSimulatorStatus.stopped)) then
-    Result := Modules[Module].name
-  else
-    Result := 'modul neexistuje';
+  begin
+    StrPLCopy(name, Modules[Module].name, nameLen);
+    Result := 0;
+  end else
+    Result := MTB_MODULE_INVALID_ADDR;
 end;
 
 function GetModuleFW(module:Cardinal; fw:PChar; fwLen:Cardinal):Integer; stdcall;
 begin
   if ((module >= FormConfig.pins_start) and (module <= FormConfig.pins_end)
     and (FormConfig.Status >= TSimulatorStatus.stopped)) then
-    Result := Modules[module].fw
-  else
-    Result := 'modul neexistuje';
+  begin
+    StrPLCopy(fw, Modules[Module].fw, fwLen);
+    Result := 0;
+  end else
+    Result := MTB_MODULE_INVALID_ADDR;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 function GetDeviceVersion(version:PChar; versionLen:Cardinal):Integer; stdcall;
 begin
-  Result := 'virtual';
+  if (FormConfig.Status >= TSimulatorStatus.stopped) then
+   begin
+    StrPLCopy(version, 'MTB-SIMULATOR-V', versionLen);
+    Result := 0;
+   end else
+    Result := MTB_DEVICE_DISCONNECTED;
 end;//function
 
 procedure GetDriverVersion(version:PChar; versionLen:Cardinal) stdcall;
 begin
-  Result := 'virtual';
+  StrPLCopy(version, 'SIMULATOR-DRIVER-V', versionLen);
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -388,5 +478,5 @@ begin
   t_event.Enabled := false;
   Application.CreateForm(TFormConfig, FormConfig);
   Application.CreateForm(TF_Board, F_Board);
-  end.
+end.
 

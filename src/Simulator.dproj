@@ -57,6 +57,7 @@
 				<Form>F_Board</Form>
 			</DCCReference>
 			<DCCReference Include="LibraryEvents.pas"/>
+			<DCCReference Include="Errors.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

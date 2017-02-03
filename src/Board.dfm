@@ -3,7 +3,7 @@ object F_Board: TF_Board
   Top = 0
   BorderStyle = bsToolWindow
   Caption = 'Editovat desku [adresa]'
-  ClientHeight = 225
+  ClientHeight = 297
   ClientWidth = 233
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -77,7 +77,7 @@ object F_Board: TF_Board
   end
   object B_Apply: TButton
     Left = 150
-    Top = 194
+    Top = 264
     Width = 75
     Height = 25
     Caption = 'Pou'#382#237't'
@@ -86,7 +86,7 @@ object F_Board: TF_Board
   end
   object B_Storno: TButton
     Left = 69
-    Top = 194
+    Top = 264
     Width = 75
     Height = 25
     Caption = 'Storno'
@@ -110,5 +110,16 @@ object F_Board: TF_Board
       'Ne'
       'Ano')
     TabOrder = 5
+  end
+  object RG_Failure: TRadioGroup
+    Left = 8
+    Top = 194
+    Width = 217
+    Height = 64
+    Caption = ' Porucha '
+    Items.Strings = (
+      'Ne'
+      'Ano')
+    TabOrder = 6
   end
 end

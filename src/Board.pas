@@ -52,6 +52,7 @@ type
     Label4: TLabel;
     E_FW: TEdit;
     RG_Exists: TRadioGroup;
+    RG_Failure: TRadioGroup;
     procedure B_StornoClick(Sender: TObject);
     procedure B_ApplyClick(Sender: TObject);
   private
@@ -77,9 +78,10 @@ begin
    Exit;
   end;
 
- if ((Modules[OpenIndex].exists) and (Self.RG_Exists.ItemIndex = 0)) then
+ if ((not Modules[OpenIndex].failure) and (Self.RG_Failure.ItemIndex = 1)) then
   begin
-   // module is being non-exist
+   // module is failing
+   Modules[OpenIndex].failure := true;
    if (Assigned(LibEvents.OnError.event)) then
     LibEvents.OnError.event(Self, LibEvents.OnError.data, 141, OpenIndex, 'Modul nekomunikuje');
    if (Assigned(LibEvents.OnOutputChanged.event)) then
@@ -88,9 +90,10 @@ begin
      LibEvents.OnInputChanged.event(FormConfig, LibEvents.OnOutputChanged.data, OpenIndex);
     end;
   end;
- if ((not Modules[OpenIndex].exists) and (Self.RG_Exists.ItemIndex = 1)) then
+ if ((not Modules[OpenIndex].failure) and (Self.RG_Exists.ItemIndex = 0)) then
   begin
-   // module is being non-exist
+   // module is restored
+   Modules[OpenIndex].failure := false;
    if (Assigned(LibEvents.OnError.event)) then
     LibEvents.OnError.event(Self, LibEvents.OnError.data, 142, OpenIndex, 'Modul komunikuje');
    if (Assigned(LibEvents.OnOutputChanged.event)) then
@@ -100,10 +103,18 @@ begin
     end;
   end;
 
-
  Modules[OpenIndex].name := Self.E_Name.Text;
- Modules[OpenIndex].typ  := Self.CB_Type.Items[Self.CB_Type.ItemIndex];
- Modules[OpenIndex].fw   := Self.E_FW.Text;
+
+ case (Self.CB_Type.ItemIndex) of
+  0 : Modules[OpenIndex].typ := idMTB_UNI_ID;
+  1 : Modules[OpenIndex].typ := idMTB_UNIOUT_ID;
+  2 : Modules[OpenIndex].typ := idMTB_TTL_ID;
+  3 : Modules[OpenIndex].typ := idMTB_TTLOUT_ID;
+  4 : Modules[OpenIndex].typ := idMTB_REGP_ID;
+  5 : Modules[OpenIndex].typ := idMTB_POT_ID;
+ end;
+
+ Modules[OpenIndex].fw := Self.E_FW.Text;
  case (Self.RG_Exists.ItemIndex) of
   0:Modules[OpenIndex].exists := false;
   1:Modules[OpenIndex].exists := true;
@@ -113,23 +124,33 @@ begin
 end;//procedure
 
 procedure TF_Board.OpenForm(Module: Integer);
-var i:Integer;
 begin
  Self.L_adresa.Caption := IntToStr(Module);
  Self.OpenIndex := Module;
  Self.E_Name.Text := Modules[OpenIndex].name;
  Self.E_FW.Text   := Modules[OpenIndex].fw;
+
  case (Modules[OpenIndex].exists) of
   false:Self.RG_Exists.ItemIndex := 0;
   true :Self.RG_Exists.ItemIndex := 1;
  end;//case
 
- for i := 0 to Self.CB_Type.Items.Count-1 do
-  if (Self.CB_Type.Items.Strings[i] = Modules[OpenIndex].typ) then
-   begin
-    Self.CB_Type.ItemIndex := i;
-    Break;
-   end;
+ case (Modules[OpenIndex].failure) of
+  false:Self.RG_Failure.ItemIndex := 0;
+  true :Self.RG_Failure.ItemIndex := 1;
+ end;//case
+
+ Self.RG_Exists.Enabled := (FormConfig.Status < TSimulatorStatus.starting);
+ Self.RG_Failure.Enabled := (FormConfig.Status = TSimulatorStatus.running);
+
+ case (Modules[OpenIndex].typ) of
+  idMTB_UNI_ID    : Self.CB_Type.ItemIndex := 0;
+  idMTB_UNIOUT_ID : Self.CB_Type.ItemIndex := 1;
+  idMTB_TTL_ID    : Self.CB_Type.ItemIndex := 2;
+  idMTB_TTLOUT_ID : Self.CB_Type.ItemIndex := 3;
+  idMTB_REGP_ID   : Self.CB_Type.ItemIndex := 4;
+  idMTB_POT_ID    : Self.CB_Type.ItemIndex := 5;
+ end;
 
  Self.Caption := 'Editovat desku '+IntToStr(Module);
  Self.ShowModal();
