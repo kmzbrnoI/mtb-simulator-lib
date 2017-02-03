@@ -434,7 +434,7 @@ end;//function
 
 procedure BindOnLog(event:TStdLogEvent; data:Pointer); stdcall;
 begin
-
+  // no logging messages here
 end;
 
 procedure BindOnInputChanged(event:TStdModuleChangeEvent; data:Pointer); stdcall;
@@ -451,7 +451,8 @@ end;//function
 
 procedure BindOnScanned(event:TStdNotifyEvent; data:Pointer); stdcall;
 begin
-
+  LibEvents.OnScanned.data  := data;
+  LibEvents.OnScanned.event := event;
 end;
 
 // ----- setting events end -----

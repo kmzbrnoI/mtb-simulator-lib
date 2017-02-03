@@ -35,6 +35,7 @@ type
     OnError:TMyErrorEvent;
     OnInputChanged:TMyModuleChangeEvent;
     OnOutputChanged:TMyModuleChangeEvent;
+    OnScanned:TMyNotifyEvent;
   end;
 
 var

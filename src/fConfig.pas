@@ -103,6 +103,8 @@ type
     procedure OnStart(Sender:TObject);
     procedure OnStop(Sender:TObject);
 
+    procedure OnScanned(Sender:TObject);
+
     property Status:TSimulatorStatus read fstatus write SetStatus;
   end;
 
@@ -340,10 +342,12 @@ end;//procedure
 
 procedure TFormConfig.OnStart(Sender:TObject);
 begin
-  (Sender as TTimer).Enabled := false;
   status := TSimulatorStatus.running;
   F_Board.RG_Failure.Enabled := true;
   if (Assigned(LibEvents.AfterStart.event)) then LibEvents.AfterStart.event(FormConfig, LibEvents.AfterStart.data);
+
+  (Sender as TTimer).Interval := 500;
+  (Sender as TTimer).OnTimer := Self.OnScanned;
 end;//procedure
 
 procedure TFormConfig.OnStop(Sender:TObject);
@@ -353,6 +357,12 @@ begin
   F_Board.RG_Exists.Enabled := true;
   if (Assigned(LibEvents.AfterStop.event)) then LibEvents.AfterStop.event(FormConfig, LibEvents.AfterStop.data);
 end;//procedure
+
+procedure TFormConfig.OnScanned(Sender:TObject);
+begin
+  (Sender as TTimer).Enabled := false;
+  if (Assigned(LibEvents.OnScanned.event)) then LibEvents.OnScanned.event(FormConfig, LibEvents.OnScanned.data);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
