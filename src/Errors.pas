@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Errors.pas
-//  MTB communication library
+//  MTB simulator library
 //  Error codes definiton
 //   (c) Jan Horacek (jan.horacek@kmz-brno.cz),
 ////////////////////////////////////////////////////////////////////////////////
@@ -8,7 +8,7 @@
 {
    LICENSE:
 
-   Copyright 2016 Jan Horacek
+   Copyright 2016-2017 Jan Horacek
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

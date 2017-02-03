@@ -4,7 +4,6 @@
 //  Main Library file.
 //  (c) Jan Horacek (jan.horacek@kmz-brno.cz),
 //      Michal Petrilak (engineercz@gmail.com)
-// 09.08.2015
 ////////////////////////////////////////////////////////////////////////////////
 
 {
@@ -154,7 +153,10 @@ begin
     Exit(MTB_ALREADY_OPENNED);
 
   for i := FormConfig.pins_start to FormConfig.pins_end do
+   begin
     Modules[i].failure := false;
+    F_Board.RG_Failure.ItemIndex := 0;
+   end;
 
   try
     if (Assigned(LibEvents.BeforeOpen.event)) then LibEvents.BeforeOpen.event(FormConfig, LibEvents.BeforeOpen.data);

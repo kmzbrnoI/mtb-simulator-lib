@@ -4,13 +4,12 @@
 //  Main configuration form implemetation.
 //  (c) Jan Horacek (jan.horacek@kmz-brno.cz),
 //      Michal Petrilak (engineercz@gmail.com)
-// 30.05.2015
 ////////////////////////////////////////////////////////////////////////////////
 
 {
    LICENSE:
 
-   Copyright 2015 Michal Petrilak, Jan Horacek
+   Copyright 2015-2017 Michal Petrilak, Jan Horacek
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -342,7 +341,10 @@ end;//procedure
 procedure TFormConfig.OnStart(Sender:TObject);
 begin
   status := TSimulatorStatus.running;
-  F_Board.RG_Failure.Enabled := true;
+
+  if (F_Board.Showing) then
+    F_Board.RG_Failure.Enabled := Modules[F_Board.OpenIndex].exists;
+
   if (Assigned(LibEvents.AfterStart.event)) then LibEvents.AfterStart.event(FormConfig, LibEvents.AfterStart.data);
 
   (Sender as TTimer).Interval := 500;

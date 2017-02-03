@@ -4,13 +4,12 @@
 //  MTB board configuration form implemetation.
 //  (c) Jan Horacek (jan.horacek@kmz-brno.cz),
 //      Michal Petrilak (engineercz@gmail.com)
-// 30.05.2015
 ////////////////////////////////////////////////////////////////////////////////
 
 {
    LICENSE:
 
-   Copyright 2015 Michal Petrilak, Jan Horacek
+   Copyright 2015-2017 Michal Petrilak, Jan Horacek
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -56,8 +55,10 @@ type
     procedure B_StornoClick(Sender: TObject);
     procedure B_ApplyClick(Sender: TObject);
   private
-    OpenIndex:Integer;
+
   public
+    OpenIndex:Integer;
+
     procedure OpenForm(Module:Integer);
   end;
 
@@ -90,7 +91,7 @@ begin
      LibEvents.OnInputChanged.event(FormConfig, LibEvents.OnOutputChanged.data, OpenIndex);
     end;
   end;
- if ((not Modules[OpenIndex].failure) and (Self.RG_Exists.ItemIndex = 0)) then
+ if ((Modules[OpenIndex].failure) and (Self.RG_Failure.ItemIndex = 0)) then
   begin
    // module is restored
    Modules[OpenIndex].failure := false;
@@ -141,7 +142,7 @@ begin
  end;//case
 
  Self.RG_Exists.Enabled := (FormConfig.Status < TSimulatorStatus.starting);
- Self.RG_Failure.Enabled := (FormConfig.Status = TSimulatorStatus.running);
+ Self.RG_Failure.Enabled := (FormConfig.Status = TSimulatorStatus.running) and (Modules[OpenIndex].exists);
 
  case (Modules[OpenIndex].typ) of
   idMTB_UNI_ID    : Self.CB_Type.ItemIndex := 0;
