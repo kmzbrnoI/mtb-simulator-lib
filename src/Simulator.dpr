@@ -358,8 +358,7 @@ end;
 
 function GetModuleName(module:Cardinal; name:PChar; nameLen:Cardinal):Integer; stdcall;
 begin
-  if ((module >= FormConfig.pins_start) and (module <= FormConfig.pins_end)
-    and (FormConfig.Status >= TSimulatorStatus.stopped)) then
+  if (module <= 255) then
   begin
     StrPLCopy(name, Modules[Module].name, nameLen);
     Result := 0;

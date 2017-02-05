@@ -240,7 +240,7 @@ begin
  Self.pins_start := 0;     // default value
  Self.pins_end   := 31;
 
- Ini := TMemIniFile.Create(filename);
+ Ini := TMemIniFile.Create(filename, TEncoding.UTF8);
 
  Self.pins_start := ini.ReadInteger('MTB', 'start', 0);
  Self.pins_end   := ini.ReadInteger('MTB', 'end', 31);
@@ -267,7 +267,7 @@ begin
  if (not DirectoryExists('mtb')) then CreateDir('mtb');
 
  DeleteFile(filename);
- Ini := TMemIniFile.Create(filename);
+ Ini := TMemIniFile.Create(filename, TEncoding.UTF8);
 
  ini.WriteInteger('MTB', 'start', Self.pins_start);
  ini.WriteInteger('MTB', 'end', Self.pins_end);
