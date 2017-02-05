@@ -64,6 +64,9 @@ uses
 
 {$R *.res}
 
+type
+  TAddr = 0..191;   // Rozsah povolenych adres
+
 var
    // this timer simulates delays on open, close, start, stop
    t_event:TTimer;
@@ -262,16 +265,24 @@ end;
 
 function GetInput(module, port: Cardinal): Integer; stdcall;
 begin
- if (FormConfig.Status <> TSimulatorStatus.running) then Exit(-1);
- if (port > 15) then Exit(-2);
- if (not Modules[Module].exists) then Exit(-2);
+  if (FormConfig.Status = TSimulatorStatus.starting) then Exit(MTB_INPUT_NOT_YET_SCANNED);
+  if (FormConfig.Status <> TSimulatorStatus.running) then Exit(MTB_NOT_STARTED);
+  if (port > 15) then Exit(MTB_PORT_INVALID_NUMBER);
+  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(MTB_MODULE_INVALID_ADDR);
+  if (Modules[Module].failure) then Exit(MTB_MODULE_FAILED);  
 
   Result := vstup[Module, Port];
 end;
 
 function SetOutput(module, port: Cardinal; state: Integer): Integer; stdcall;
 begin
+  if (FormConfig.Status <> TSimulatorStatus.running) then Exit(MTB_NOT_STARTED);
+  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(MTB_MODULE_INVALID_ADDR);
+  if (Modules[Module].failure) then Exit(MTB_MODULE_FAILED);
+  if (port > 15) then Exit(MTB_PORT_INVALID_NUMBER);
+  if (state > 15) then Exit(MTB_INVALID_SCOM_CODE);
   if (vystup[Module, Port] = state) then Exit(0);
+
   vystup[Module, Port] := State;
   FormConfig.RepaintPins;
   if (Assigned(LibEvents.OnOutputChanged.event)) then LibEvents.OnOutputChanged.event(FormConfig, LibEvents.OnOutputChanged.data, Module);
@@ -280,10 +291,12 @@ end;
 
 function GetOutput(module, port: Cardinal): Integer; stdcall;
 begin
- if (FormConfig.Status <> TSimulatorStatus.running) then Exit(-1);
- if (port > 15) then Exit(-2);
- if (not Modules[Module].exists) then Exit(-2);
- Result := vystup[Module, port];
+  if (FormConfig.Status <> TSimulatorStatus.running) then Exit(MTB_NOT_STARTED);
+  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(MTB_MODULE_INVALID_ADDR);
+  if (Modules[Module].failure) then Exit(MTB_MODULE_FAILED);
+  if (port > 15) then Exit(MTB_PORT_INVALID_NUMBER);
+
+  Result := vystup[Module, port];
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -292,15 +305,10 @@ end;
 
 function SetInput(module, port: Cardinal; state: Integer): Integer; stdcall;
 begin
-  if (State < 32) then
-   begin
-    Vstup[module,port] := state;
-    if (Assigned(FormConfig)) then FormConfig.RepaintPins;
-    Result := 0;
-   end else begin
-    Result := -1;
-   end;
-end;//function
+  Vstup[module,port] := state;
+  if (Assigned(FormConfig)) then FormConfig.RepaintPins;
+  Result := 0;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
