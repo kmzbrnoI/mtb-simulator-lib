@@ -67,7 +67,7 @@ var
 
 implementation
 
-uses fConfig, LibraryEvents;
+uses fConfig, LibraryEvents, Errors;
 
 {$R *.dfm}
 
@@ -84,7 +84,7 @@ begin
    // module is failing
    Modules[OpenIndex].failure := true;
    if (Assigned(LibEvents.OnError.event)) then
-    LibEvents.OnError.event(Self, LibEvents.OnError.data, 141, OpenIndex, 'Modul nekomunikuje');
+    LibEvents.OnError.event(Self, LibEvents.OnError.data, MTB_MODULE_FAIL, OpenIndex, 'Modul nekomunikuje');
    if (Assigned(LibEvents.OnOutputChanged.event)) then
     begin
      LibEvents.OnOutputChanged.event(FormConfig, LibEvents.OnOutputChanged.data, OpenIndex);
@@ -96,7 +96,7 @@ begin
    // module is restored
    Modules[OpenIndex].failure := false;
    if (Assigned(LibEvents.OnError.event)) then
-    LibEvents.OnError.event(Self, LibEvents.OnError.data, 142, OpenIndex, 'Modul komunikuje');
+    LibEvents.OnError.event(Self, LibEvents.OnError.data, MTB_MODULE_RESTORED, OpenIndex, 'Modul komunikuje');
    if (Assigned(LibEvents.OnOutputChanged.event)) then
     begin
      LibEvents.OnOutputChanged.event(FormConfig, LibEvents.OnOutputChanged.data, OpenIndex);
