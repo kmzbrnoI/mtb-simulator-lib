@@ -355,6 +355,7 @@ procedure TFormConfig.OnStop(Sender:TObject);
 begin
   (Sender as TTimer).Enabled := false;
   status := TSimulatorStatus.stopped;
+  F_Board.RG_Failure.Enabled := false;
   F_Board.RG_Exists.Enabled := true;
   if (Assigned(LibEvents.AfterStop.event)) then LibEvents.AfterStop.event(FormConfig, LibEvents.AfterStop.data);
 end;//procedure

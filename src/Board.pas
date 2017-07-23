@@ -91,7 +91,8 @@ begin
      LibEvents.OnInputChanged.event(FormConfig, LibEvents.OnOutputChanged.data, OpenIndex);
     end;
   end;
- if ((Modules[OpenIndex].failure) and (Self.RG_Failure.ItemIndex = 0)) then
+ if (((Modules[OpenIndex].failure) and (Self.RG_Failure.ItemIndex = 0)) or
+     ((FormConfig.Status = TSimulatorStatus.running) and (not Modules[OpenIndex].exists) and (Self.RG_Exists.ItemIndex = 1))) then
   begin
    // module is restored
    Modules[OpenIndex].failure := false;
@@ -141,7 +142,7 @@ begin
   true :Self.RG_Failure.ItemIndex := 1;
  end;//case
 
- Self.RG_Exists.Enabled := (FormConfig.Status < TSimulatorStatus.starting);
+ Self.RG_Exists.Enabled := (FormConfig.Status <> TSimulatorStatus.running) or (not Modules[OpenIndex].exists);
  Self.RG_Failure.Enabled := (FormConfig.Status = TSimulatorStatus.running) and (Modules[OpenIndex].exists);
 
  case (Modules[OpenIndex].typ) of
@@ -154,7 +155,7 @@ begin
  end;
 
  Self.Caption := 'Editovat desku '+IntToStr(Module);
- Self.ShowModal();
+ Self.Show();
 end;//procedure
 
 procedure TF_Board.B_StornoClick(Sender: TObject);

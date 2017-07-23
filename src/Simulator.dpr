@@ -228,8 +228,11 @@ begin
   try
     if (Assigned(LibEvents.BeforeStart.event)) then LibEvents.BeforeStart.event(FormConfig, LibEvents.BeforeStart.data);
     FormConfig.status := TSimulatorStatus.starting;
-    F_Board.RG_Exists.Enabled := false;
+
+    if ((F_Board.Showing) and (Modules[F_Board.OpenIndex].exists)) then
+      F_Board.RG_Exists.Enabled := false;
     F_Board.RG_Failure.Enabled := false;
+
     ActivateTimer(FormConfig.OnStart, 500);
     Result := 0;
   except
