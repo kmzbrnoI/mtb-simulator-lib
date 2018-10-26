@@ -138,10 +138,10 @@ begin
  if (Self.chb_IR3.Checked) then Modules[OpenIndex].ir := Modules[OpenIndex].ir or 8;
 
  Modules[OpenIndex].scom := 0;
- if (Self.chb_SCOM0.Checked) then Modules[OpenIndex].scom := Modules[OpenIndex].ir or 1;
- if (Self.chb_SCOM1.Checked) then Modules[OpenIndex].scom := Modules[OpenIndex].ir or 2;
- if (Self.chb_SCOM2.Checked) then Modules[OpenIndex].scom := Modules[OpenIndex].ir or 4;
- if (Self.chb_SCOM3.Checked) then Modules[OpenIndex].scom := Modules[OpenIndex].ir or 8;
+ if (Self.chb_SCOM0.Checked) then Modules[OpenIndex].scom := Modules[OpenIndex].scom or 1;
+ if (Self.chb_SCOM1.Checked) then Modules[OpenIndex].scom := Modules[OpenIndex].scom or 2;
+ if (Self.chb_SCOM2.Checked) then Modules[OpenIndex].scom := Modules[OpenIndex].scom or 4;
+ if (Self.chb_SCOM3.Checked) then Modules[OpenIndex].scom := Modules[OpenIndex].scom or 8;
 
  Self.Close()
 end;//procedure

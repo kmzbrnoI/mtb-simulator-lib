@@ -228,8 +228,16 @@ begin
     for j := 0 to 15 do begin
       sh := pin[i, j];
 
-      sh.Brush.Color := clLime * vystup[i, j];
-      sh.Pen.Color := clRed * vstup[i, j];
+      if ((Modules[i].ir shr (j div 4)) and $1 > 0) then
+        sh.Pen.Color := clFuchsia * vstup[i, j]
+      else
+        sh.Pen.Color := clRed * vstup[i, j];
+
+      if ((Modules[i].scom shr (j div 2)) and $1 > 0) then begin
+        sh.Brush.Color := clAqua * Integer(vystup[i, j] > 0);
+        sh.Hint := IntToStr(vystup[i, j]);
+      end else
+        sh.Brush.Color := clLime * Integer(vystup[i, j] > 0);
     end;
   end;
 end;
@@ -299,7 +307,7 @@ begin
    if (Modules[i].ir <> 0) then
      Ini.WriteInteger('MTB'+IntToStr(i),'ir',Modules[i].ir);
    if (Modules[i].scom <> 0) then
-     Ini.WriteInteger('MTB'+IntToStr(i),'scom',Modules[i].ir);
+     Ini.WriteInteger('MTB'+IntToStr(i),'scom',Modules[i].scom);
   end;
 
  Ini.UpdateFile();
