@@ -9,7 +9,7 @@
 {
    LICENSE:
 
-   Copyright 2015-2017 Michal Petrilak, Jan Horacek
+   Copyright 2015-2018 Michal Petrilak, Jan Horacek
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -53,6 +53,16 @@ type
   // Simulation status:
   TSimulatorStatus = (closed = 0, opening = 1, closing = 2, stopped = 3, starting = 4, running = 5, stopping = 6);
 
+  TRCSIPortType = (
+    iptPlain = 0,
+    iptIR = 1
+  );
+
+  TRCSOPortType = (
+    optPlain = 0,
+    optSCom = 1
+  );
+
   // One MTB module
   TModule = record
     name:string;
@@ -60,6 +70,8 @@ type
     fw:string;
     exists:boolean;
     failure:boolean;
+    ir:Cardinal;
+    scom:Cardinal;
   end;
 
   // Form
@@ -254,6 +266,8 @@ begin
    Modules[i].typ    := TModulType(Ini.ReadInteger('MTB'+IntToStr(i),'typ', Integer(idMTB_UNI_ID)));
    Modules[i].fw     := Ini.ReadString('MTB'+IntToStr(i),'fw','VIRTUAL');
    Modules[i].exists := Ini.ReadBool('MTB'+IntToStr(i),'is',true);
+   Modules[i].ir     := Ini.ReadInteger('MTB'+IntToStr(i),'ir',0);
+   Modules[i].scom   := Ini.ReadInteger('MTB'+IntToStr(i),'scom',0);
   end;
 
  Ini.Free;
@@ -274,10 +288,18 @@ begin
 
  for i := 0 to _MAX_MTB do
   begin
-   Ini.WriteString('MTB'+IntToStr(i),'name',Modules[i].name);
-   Ini.WriteInteger('MTB'+IntToStr(i),'typ', Integer(Modules[i].typ));
-   Ini.WriteString('MTB'+IntToStr(i),'fw',Modules[i].fw);
-   Ini.WriteBool('MTB'+IntToStr(i),'is',Modules[i].exists);
+   if (Modules[i].name <> '') then
+     Ini.WriteString('MTB'+IntToStr(i),'name',Modules[i].name);
+   if (Modules[i].typ <> idMTB_UNI_ID) then
+     Ini.WriteInteger('MTB'+IntToStr(i),'typ', Integer(Modules[i].typ));
+   if (Modules[i].fw <> 'VIRTUAL') then
+     Ini.WriteString('MTB'+IntToStr(i),'fw',Modules[i].fw);
+   if (Modules[i].exists) then
+     Ini.WriteBool('MTB'+IntToStr(i),'is',Modules[i].exists);
+   if (Modules[i].ir <> 0) then
+     Ini.WriteInteger('MTB'+IntToStr(i),'ir',Modules[i].ir);
+   if (Modules[i].scom <> 0) then
+     Ini.WriteInteger('MTB'+IntToStr(i),'scom',Modules[i].ir);
   end;
 
  Ini.UpdateFile();

@@ -232,6 +232,7 @@ begin
     if ((F_Board.Showing) and (Modules[F_Board.OpenIndex].exists)) then
       F_Board.RG_Exists.Enabled := false;
     F_Board.RG_Failure.Enabled := false;
+    F_Board.GB_IO_type.Enabled := false;
 
     ActivateTimer(FormConfig.OnStart, 500);
     Result := 0;
@@ -252,6 +253,7 @@ begin
     if (Assigned(LibEvents.BeforeStop.event)) then LibEvents.BeforeStop.event(FormConfig, LibEvents.BeforeStop.data);
     FormConfig.status := TSimulatorStatus.stopping;
     F_Board.RG_Failure.Enabled := false;
+    F_Board.GB_IO_type.Enabled := true;
     ActivateTimer(FormConfig.OnStop, 500);
     Result := 0;
   except
@@ -301,6 +303,29 @@ begin
 
   Result := vystup[Module, port];
 end;
+
+function GetInputType(module, port: Cardinal): Integer; stdcall;
+begin
+  if (port > 15) then Exit(MTB_PORT_INVALID_NUMBER);
+  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(MTB_MODULE_INVALID_ADDR);
+
+  if ((Modules[module].ir shr (port div 4)) and $1 > 0) then
+    Result := Integer(TRCSIPortType.iptIR)
+  else
+    Result := Integer(TRCSIPortType.iptPlain);
+end;
+
+function GetOutputType(module, port: Cardinal): Integer; stdcall;
+begin
+  if (port > 15) then Exit(MTB_PORT_INVALID_NUMBER);
+  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(MTB_MODULE_INVALID_ADDR);
+
+  if ((Modules[module].scom shr (port div 2)) and $1 > 0) then
+    Result := Integer(TRCSOPortType.optSCom)
+  else
+    Result := Integer(TRCSOPortType.optPlain);
+end;
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Set input:
@@ -501,7 +526,7 @@ exports
   BindBeforeOpen, BindAfterOpen, BindBeforeClose, BindAfterClose,
   BindBeforeStart, BindAfterStart, BindBeforeStop, BindAfterStop,
   BindOnError, BindOnLog, BindOnInputChanged, BindOnOutputChanged,
-  BindOnScanned, SetInput;
+  BindOnScanned, SetInput, GetInputType, GetOutputType;
 
 
 begin

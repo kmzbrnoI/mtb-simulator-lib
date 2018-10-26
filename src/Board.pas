@@ -52,6 +52,15 @@ type
     E_FW: TEdit;
     RG_Exists: TRadioGroup;
     RG_Failure: TRadioGroup;
+    GB_IO_type: TGroupBox;
+    chb_IR0: TCheckBox;
+    chb_IR3: TCheckBox;
+    chb_IR2: TCheckBox;
+    chb_IR1: TCheckBox;
+    chb_SCOM0: TCheckBox;
+    chb_SCOM1: TCheckBox;
+    chb_SCOM2: TCheckBox;
+    chb_SCOM3: TCheckBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_ApplyClick(Sender: TObject);
   private
@@ -75,7 +84,7 @@ procedure TF_Board.B_ApplyClick(Sender: TObject);
 begin
  if (Self.CB_Type.ItemIndex = -1) then
   begin
-   MessageBox(F_Board.Handle,'Vyberte typ MTB desky !','Nelze uložit',MB_OK OR MB_ICONWARNING);
+   MessageBox(F_Board.Handle,'Vyberte typ MTB desky!','Nelze uložit',MB_OK OR MB_ICONWARNING);
    Exit;
   end;
 
@@ -122,6 +131,18 @@ begin
   1:Modules[OpenIndex].exists := true;
  end;//case
 
+ Modules[OpenIndex].ir := 0;
+ if (Self.chb_IR0.Checked) then Modules[OpenIndex].ir := Modules[OpenIndex].ir or 1;
+ if (Self.chb_IR1.Checked) then Modules[OpenIndex].ir := Modules[OpenIndex].ir or 2;
+ if (Self.chb_IR2.Checked) then Modules[OpenIndex].ir := Modules[OpenIndex].ir or 4;
+ if (Self.chb_IR3.Checked) then Modules[OpenIndex].ir := Modules[OpenIndex].ir or 8;
+
+ Modules[OpenIndex].scom := 0;
+ if (Self.chb_SCOM0.Checked) then Modules[OpenIndex].scom := Modules[OpenIndex].ir or 1;
+ if (Self.chb_SCOM1.Checked) then Modules[OpenIndex].scom := Modules[OpenIndex].ir or 2;
+ if (Self.chb_SCOM2.Checked) then Modules[OpenIndex].scom := Modules[OpenIndex].ir or 4;
+ if (Self.chb_SCOM3.Checked) then Modules[OpenIndex].scom := Modules[OpenIndex].ir or 8;
+
  Self.Close()
 end;//procedure
 
@@ -144,6 +165,7 @@ begin
 
  Self.RG_Exists.Enabled := (FormConfig.Status <> TSimulatorStatus.running) or (not Modules[OpenIndex].exists);
  Self.RG_Failure.Enabled := (FormConfig.Status = TSimulatorStatus.running) and (Modules[OpenIndex].exists);
+ Self.GB_IO_type.Enabled := (FormConfig.Status <> TSimulatorStatus.running);
 
  case (Modules[OpenIndex].typ) of
   idMTB_UNI_ID    : Self.CB_Type.ItemIndex := 0;
@@ -153,6 +175,16 @@ begin
   idMTB_REGP_ID   : Self.CB_Type.ItemIndex := 4;
   idMTB_POT_ID    : Self.CB_Type.ItemIndex := 5;
  end;
+
+ Self.chb_IR0.Checked := Boolean(Modules[OpenIndex].ir and $1);
+ Self.chb_IR1.Checked := Boolean((Modules[OpenIndex].ir shr 1) and $1);
+ Self.chb_IR2.Checked := Boolean((Modules[OpenIndex].ir shr 2) and $1);
+ Self.chb_IR3.Checked := Boolean((Modules[OpenIndex].ir shr 3) and $1);
+
+ Self.chb_SCOM0.Checked := Boolean(Modules[OpenIndex].scom and $1);
+ Self.chb_SCOM1.Checked := Boolean((Modules[OpenIndex].scom shr 1) and $1);
+ Self.chb_SCOM2.Checked := Boolean((Modules[OpenIndex].scom shr 2) and $1);
+ Self.chb_SCOM3.Checked := Boolean((Modules[OpenIndex].scom shr 3) and $1);
 
  Self.Caption := 'Editovat desku '+IntToStr(Module);
  Self.Show();
