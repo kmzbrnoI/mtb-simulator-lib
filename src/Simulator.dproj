@@ -22,12 +22,13 @@
 		<PropertyGroup Condition="'$(Base)'!=''">
 			<DCC_BplOutput>..\outunit\</DCC_BplOutput>
 			<DCC_ImageBase>00400000</DCC_ImageBase>
-			<DCC_DependencyCheckOutputName>..\..\..\..\Delphi\hJOPserver\output\lib-rcs\Simulator.dll</DCC_DependencyCheckOutputName>
+			<DCC_DependencyCheckOutputName>..\output\Simulator.dll</DCC_DependencyCheckOutputName>
 			<DCC_UsePackage>vcl;rtl;vclx;DelphiX_for7;VclSmp;vclactnband;CPortLib7;Custom</DCC_UsePackage>
 			<DCC_IOChecking>false</DCC_IOChecking>
 			<DCC_Platform>x86</DCC_Platform>
+			<DCC_RangeChecking>true</DCC_RangeChecking>
 			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
-			<DCC_ExeOutput>..\..\..\..\Delphi\hJOPserver\output\lib-rcs\</DCC_ExeOutput>
+			<DCC_ExeOutput>..\output\</DCC_ExeOutput>
 			<DCC_N>true</DCC_N>
 			<DCC_K>false</DCC_K>
 			<GenDll>true</GenDll>
@@ -36,6 +37,7 @@
 			<DCC_SymbolReferenceInfo>1</DCC_SymbolReferenceInfo>
 			<DCC_F>false</DCC_F>
 			<DCC_E>false</DCC_E>
+			<DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_1)'!=''">
 			<DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -44,7 +46,8 @@
 			<DCC_DebugInformation>false</DCC_DebugInformation>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2)'!=''">
-			<DCC_MapFile>3</DCC_MapFile>
+			<DCC_RemoteDebug>true</DCC_RemoteDebug>
+			<DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
 			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
 		</PropertyGroup>
 		<ItemGroup>
@@ -84,8 +87,6 @@
 						<Parameters Name="UseLauncher">False</Parameters>
 						<Parameters Name="LoadAllSymbols">True</Parameters>
 						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
-						<Parameters Name="HostApplication">D:\UsersData\vlak\Delphi\hJOPserver\output\hJOPserver.exe</Parameters>
-						<Parameters Name="DebugCWD">D:\UsersData\vlak\Delphi\hJOPserver\output\</Parameters>
 					</Parameters>
 					<VersionInfo>
 						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>
@@ -98,7 +99,7 @@
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
 						<VersionInfo Name="Private">False</VersionInfo>
-						<VersionInfo Name="DLL">False</VersionInfo>
+						<VersionInfo Name="DLL">True</VersionInfo>
 						<VersionInfo Name="Locale">1029</VersionInfo>
 						<VersionInfo Name="CodePage">1250</VersionInfo>
 					</VersionInfo>
@@ -114,6 +115,10 @@
 						<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
 						<VersionInfoKeys Name="Comments"/>
 					</VersionInfoKeys>
+					<Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dcloffice2k120.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dclofficexp120.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+					</Excluded_Packages>
 				</Delphi.Personality>
 				<ModelSupport>False</ModelSupport>
 			</BorlandProject>
