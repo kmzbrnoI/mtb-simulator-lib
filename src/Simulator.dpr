@@ -400,6 +400,11 @@ begin
  Result := cnt;
 end;
 
+function GetMaxModuleAddr():Cardinal; stdcall;
+begin
+ Result := _MAX_MTB;
+end;
+
 function GetModuleType(Module:Cardinal):Integer; stdcall;
 begin
   if ((module >= FormConfig.pins_start) and (module <= FormConfig.pins_end)
@@ -556,7 +561,8 @@ exports
   Open, OpenDevice, Close, Opened, Start, Stop, Started,
   GetInput, GetOutput, SetOutput,
   GetDeviceCount, GetDeviceSerial,
-  IsModule, IsModuleFailure, GetModuleCount, GetModuleType, GetModuleName, GetModuleFW,
+  IsModule, IsModuleFailure, GetModuleCount, GetMaxModuleAddr, GetModuleType,
+  GetModuleName, GetModuleFW,
   ApiSupportsVersion, ApiSetVersion, GetDeviceVersion, GetDriverVersion,
   BindBeforeOpen, BindAfterOpen, BindBeforeClose, BindAfterClose,
   BindBeforeStart, BindAfterStart, BindBeforeStop, BindAfterStop,
