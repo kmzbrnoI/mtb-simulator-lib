@@ -32,7 +32,7 @@
 }
 
 // JCL_DEBUG_EXPERT_INSERTJDBG OFF
-library Simulator;
+library simulator;
 
 uses
   SysUtils,
