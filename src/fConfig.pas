@@ -40,7 +40,7 @@ uses
   Dialogs, ExtCtrls, IniFiles, Menus, StdCtrls, Spin;
 
 const
-  _CFG_FILE = 'mtb/simcfg.ini';        // Config file. Change MTB ranges to make form more synoptic.
+  _DEFAULT_CFG_FILE = 'rcs/simcfg.ini';        // Config file. Change MTB ranges to make form more synoptic.
   _MAX_MTB = 255;
 
 type
@@ -103,11 +103,14 @@ type
 
    pins_start:Cardinal;
    pins_end:Cardinal;
+   config_fn:string;
 
     procedure RePaintPins();
 
     procedure LoadData(filename:string);
     procedure SaveData(filename:string);
+    procedure CreatePins();
+    procedure FreePins();
 
     procedure OnOpen(Sender:TObject);
     procedure OnClose(Sender:TObject);
@@ -143,69 +146,79 @@ begin
 end;
 
 procedure TFormConfig.FormCreate(Sender: TObject);
-var
-  i, j: Cardinal;
 begin
-  try
-    Self.LoadData(_CFG_FILE);
-  except
-
-  end;
-
-  for i := Self.pins_start to Self.pins_end do begin
-    Cfgbtn[i] := TButton.Create(FormConfig);
-    with (Cfgbtn[i]) do
-     begin
-      Parent  := FormConfig;
-      Top     := 5;
-      Left    := (i-Self.pins_start)*15 + 5;
-      Caption := '?';
-      Height  := 25;
-      Width   := 13;
-      Tag     := i;
-      OnClick := Self.CfgBtnOnClick;
-      OnMouseMove := Self.CfgBtnOnMove;
-     end;
-    for j := 0 to 15 do begin
-      pin[i, j] := TShape.Create(FormConfig);
-      with pin[i, j] do begin
-      Parent := FormConfig;
-      Left := (i-Self.pins_start)*15 + 5;
-      Top := j*15 + 35;
-      Width := 13;
-      Height := 13;
-      Pen.Width := 2;
-      Tag := 16*i + j;
-      OnMouseUp := ChangeInput;
-      OnMouseMove := ShowAddress;
-      end;
-    end;
-  end;
-  RePaintPins;
-
-  Self.ClientWidth := (((Self.pins_end-Self.pins_start)+1)*(15))+8;
-  Self.ClientHeight := (16*15)+40 + GB_Error.Height + 2;
-
-  Self.status := TSimulatorStatus.closed;
-end;
-
-procedure TFormConfig.FormDestroy(Sender: TObject);
-var i,j:Integer;
-begin
+ Self.config_fn := _DEFAULT_CFG_FILE;
  try
-   Self.SaveData(_CFG_FILE);
+   Self.LoadData(Self.config_fn);
  except
 
  end;
 
+ Self.CreatePins();
+ Self.status := TSimulatorStatus.closed;
+end;
+
+procedure TFormConfig.FormDestroy(Sender: TObject);
+begin
+ try
+   Self.SaveData(Self.config_fn);
+   Self.FreePins();
+ except
+
+ end;
+end;//procedure
+
+procedure TFormConfig.CreatePins();
+var i, j:Cardinal;
+begin
+ for i := Self.pins_start to Self.pins_end do
+  begin
+   Cfgbtn[i] := TButton.Create(FormConfig);
+   with (Cfgbtn[i]) do
+    begin
+     Parent  := FormConfig;
+     Top     := 5;
+     Left    := (i-Self.pins_start)*15 + 5;
+     Caption := '?';
+     Height  := 25;
+     Width   := 13;
+     Tag     := i;
+     OnClick := Self.CfgBtnOnClick;
+     OnMouseMove := Self.CfgBtnOnMove;
+    end;
+   for j := 0 to 15 do
+    begin
+     pin[i, j] := TShape.Create(FormConfig);
+     with pin[i, j] do
+      begin
+       Parent := FormConfig;
+       Left := (i-Self.pins_start)*15 + 5;
+       Top := j*15 + 35;
+       Width := 13;
+       Height := 13;
+       Pen.Width := 2;
+       Tag := 16*i + j;
+       OnMouseUp := ChangeInput;
+       OnMouseMove := ShowAddress;
+      end;
+    end;
+  end;
+ Self.RePaintPins();
+
+ Self.ClientWidth := (((Self.pins_end-Self.pins_start)+1)*(15))+8;
+ Self.ClientHeight := (16*15)+40 + GB_Error.Height + 2;
+end;
+
+procedure TFormConfig.FreePins();
+var i, j:Integer;
+begin
  for i := 0 to _MAX_MTB do
   begin
    if (Assigned(Self.Cfgbtn[i])) then FreeAndNil(Self.Cfgbtn[i]);
-
    for j := 0 to 15 do
      if (Assigned(Self.pin[i, j])) then FreeAndNil(Self.pin[i, j]);
   end;
-end;//procedure
+end;
 
 procedure TFormConfig.ChangeInput(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
@@ -220,7 +233,7 @@ begin
   if (Assigned(LibEvents.OnInputChanged.event)) then LibEvents.OnInputChanged.event(Self, LibEvents.OnInputChanged.data, Module);
 end;
 
-procedure TFormConfig.RePaintPins;
+procedure TFormConfig.RePaintPins();
 var
   i, j: integer;
   sh: TShape;
@@ -258,61 +271,56 @@ procedure TFormConfig.LoadData(filename:string);
 var Ini:TMemIniFile;
     i:Integer;
 begin
- Self.pins_start := 0;     // default value
- Self.pins_end   := 31;
-
  Ini := TMemIniFile.Create(filename, TEncoding.UTF8);
+ try
+   Self.pins_start := ini.ReadInteger('MTB', 'start', 0);
+   Self.pins_end   := ini.ReadInteger('MTB', 'end', 31);
 
- Self.pins_start := ini.ReadInteger('MTB', 'start', 0);
- Self.pins_end   := ini.ReadInteger('MTB', 'end', 31);
+   if (Self.pins_end < Self.pins_start) then
+    Self.pins_end := Self.pins_start;
 
- if (Self.pins_end < Self.pins_start) then
-  Self.pins_end := Self.pins_start;
-
- for i := 0 to _MAX_MTB do
-  begin
-   Modules[i].name   := Ini.ReadString('MTB'+IntToStr(i),'name','Simulator'+IntToStr(i));
-   Modules[i].typ    := TModulType(Ini.ReadInteger('MTB'+IntToStr(i),'typ', Integer(idMTB_UNI_ID)));
-   Modules[i].fw     := Ini.ReadString('MTB'+IntToStr(i),'fw','VIRTUAL');
-   Modules[i].exists := Ini.ReadBool('MTB'+IntToStr(i),'is',true);
-   Modules[i].ir     := Ini.ReadInteger('MTB'+IntToStr(i),'ir',0);
-   Modules[i].scom   := Ini.ReadInteger('MTB'+IntToStr(i),'scom',0);
-  end;
-
- Ini.Free;
+   for i := 0 to _MAX_MTB do
+    begin
+     Modules[i].name   := Ini.ReadString('MTB'+IntToStr(i),'name','Simulator'+IntToStr(i));
+     Modules[i].typ    := TModulType(Ini.ReadInteger('MTB'+IntToStr(i),'typ', Integer(idMTB_UNI_ID)));
+     Modules[i].fw     := Ini.ReadString('MTB'+IntToStr(i),'fw','VIRTUAL');
+     Modules[i].exists := Ini.ReadBool('MTB'+IntToStr(i),'is',true);
+     Modules[i].ir     := Ini.ReadInteger('MTB'+IntToStr(i),'ir',0);
+     Modules[i].scom   := Ini.ReadInteger('MTB'+IntToStr(i),'scom',0);
+    end;
+ finally
+   Ini.Free();
+ end;
 end;//function
 
 procedure TFormConfig.SaveData(filename:string);
 var Ini:TMemIniFile;
     i:Integer;
 begin
- // Hard-written directories
- if (not DirectoryExists('mtb')) then CreateDir('mtb');
-
- DeleteFile(filename);
  Ini := TMemIniFile.Create(filename, TEncoding.UTF8);
+ try
+   ini.WriteInteger('MTB', 'start', Self.pins_start);
+   ini.WriteInteger('MTB', 'end', Self.pins_end);
 
- ini.WriteInteger('MTB', 'start', Self.pins_start);
- ini.WriteInteger('MTB', 'end', Self.pins_end);
-
- for i := 0 to _MAX_MTB do
-  begin
-   if (Modules[i].name <> '') then
-     Ini.WriteString('MTB'+IntToStr(i),'name',Modules[i].name);
-   if (Modules[i].typ <> idMTB_UNI_ID) then
-     Ini.WriteInteger('MTB'+IntToStr(i),'typ', Integer(Modules[i].typ));
-   if (Modules[i].fw <> 'VIRTUAL') then
-     Ini.WriteString('MTB'+IntToStr(i),'fw',Modules[i].fw);
-   if (Modules[i].exists) then
-     Ini.WriteBool('MTB'+IntToStr(i),'is',Modules[i].exists);
-   if (Modules[i].ir <> 0) then
-     Ini.WriteInteger('MTB'+IntToStr(i),'ir',Modules[i].ir);
-   if (Modules[i].scom <> 0) then
-     Ini.WriteInteger('MTB'+IntToStr(i),'scom',Modules[i].scom);
-  end;
-
- Ini.UpdateFile();
- Ini.Free;
+   for i := 0 to _MAX_MTB do
+    begin
+     if (Modules[i].name <> '') then
+       Ini.WriteString('MTB'+IntToStr(i),'name',Modules[i].name);
+     if (Modules[i].typ <> idMTB_UNI_ID) then
+       Ini.WriteInteger('MTB'+IntToStr(i),'typ', Integer(Modules[i].typ));
+     if (Modules[i].fw <> 'VIRTUAL') then
+       Ini.WriteString('MTB'+IntToStr(i),'fw',Modules[i].fw);
+     if (Modules[i].exists) then
+       Ini.WriteBool('MTB'+IntToStr(i),'is',Modules[i].exists);
+     if (Modules[i].ir <> 0) then
+       Ini.WriteInteger('MTB'+IntToStr(i),'ir',Modules[i].ir);
+     if (Modules[i].scom <> 0) then
+       Ini.WriteInteger('MTB'+IntToStr(i),'scom',Modules[i].scom);
+    end;
+ finally
+   Ini.UpdateFile();
+   Ini.Free();
+ end;
 end;
 
 procedure TFormConfig.SE_Err_boardKeyPress(Sender: TObject; var Key: Char);

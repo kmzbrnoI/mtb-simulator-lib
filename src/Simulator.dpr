@@ -96,6 +96,9 @@ begin
 
  try
    FormConfig.LoadData(filename);
+   FormConfig.FreePins();
+   FormConfig.CreatePins();
+   FormConfig.config_fn := filename;
    Result := 0;
  except
    on E:EIniFileException do
