@@ -64,6 +64,11 @@ uses
 
 {$R *.res}
 
+const
+  API_SUPPORTED_VERSIONS: array[0..0] of Cardinal = (
+  	$0301 // v1.3
+  );
+
 type
   TAddr = 0..191;   // Rozsah povolenych adres
 
@@ -415,6 +420,24 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+function ApiSupportsVersion(version:Cardinal):Boolean; stdcall;
+var i:Integer;
+begin
+ for i := Low(API_SUPPORTED_VERSIONS) to High(API_SUPPORTED_VERSIONS) do
+   if (API_SUPPORTED_VERSIONS[i] = version) then
+     Exit(true);
+ Result := false;
+end;
+
+function ApiSetVersion(version:Cardinal):Integer; stdcall;
+begin
+ if (not ApiSupportsVersion(version)) then
+   Exit(MTB_UNSUPPORTED_API_VERSION);
+
+ api_version := version;
+ Result := 0;
+end;
+
 function GetDeviceVersion(version:PChar; versionLen:Cardinal):Integer; stdcall;
 begin
   if (FormConfig.Status >= TSimulatorStatus.stopped) then
@@ -522,7 +545,7 @@ exports
   GetInput, GetOutput, SetOutput,
   GetDeviceCount, GetDeviceSerial,
   IsModule, IsModuleFailure, GetModuleCount, GetModuleType, GetModuleName, GetModuleFW,
-  GetDeviceVersion, GetDriverVersion,
+  ApiSupportsVersion, ApiSetVersion, GetDeviceVersion, GetDriverVersion,
   BindBeforeOpen, BindAfterOpen, BindBeforeClose, BindAfterClose,
   BindBeforeStart, BindAfterStart, BindBeforeStop, BindAfterStop,
   BindOnError, BindOnLog, BindOnInputChanged, BindOnOutputChanged,

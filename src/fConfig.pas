@@ -126,6 +126,7 @@ var
   vstup: Array[0.._MAX_MTB, 0..15] of Byte;                  // input states
   vystup: Array[0.._MAX_MTB, 0..15] of Byte;                 // output states
   Modules:array[0.._MAX_MTB] of TModule;                     // modules config
+  api_version:Cardinal;
 
 
 implementation
