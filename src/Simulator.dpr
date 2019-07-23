@@ -121,6 +121,15 @@ begin
  end;
 end;
 
+procedure SetConfigFileName(filename:PChar); stdcall;
+begin
+ try
+   FormConfig.config_fn := filename;
+ except
+
+ end;
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 // logging
 
@@ -541,7 +550,7 @@ end;
 // Exported functions:
 
 exports
-  LoadConfig, SaveConfig,
+  LoadConfig, SaveConfig, SetConfigFileName,
   SetLogLevel, GetLogLevel,
   ShowConfigDialog, HideConfigDialog,
   Open, OpenDevice, Close, Opened, Start, Stop, Started,
