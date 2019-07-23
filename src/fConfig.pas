@@ -45,7 +45,7 @@ const
 
 type
   TMyEvent  = function(Sender:TObject):Integer of object; stdcall;
-  TMyErrorEvent = function (Sender: TObject; errValue: word; errAddr: byte; errStr:string):Integer of object; stdcall;
+  TMyErrorEvent = function (Sender: TObject; errValue: word; errAddr: Cardinal; errStr:string):Integer of object; stdcall;
 
   TModulType = (idNone = $0, idMTB_POT_ID = $10, idMTB_REGP_ID = $30, idMTB_UNI_ID = $40,
         idMTB_UNIOUT_ID = $50, idMTB_TTL_ID = $60, idMTB_TTLOUT_ID = $70);
