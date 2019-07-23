@@ -9,7 +9,7 @@
 {
    LICENSE:
 
-   Copyright 2015-2017 Michal Petrilak, Jan Horacek
+   Copyright 2015-2019 Michal Petrilak, Jan Horacek
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,23 +27,8 @@
 {
    DESCRIPTION:
 
-   This library is an alternative to MTB library, which provides connection
-   to the MTB bus. This library does NOT connect to the MTB, however, MTB is
-   simulated. Its main purpose is to siplify debugging -- MTB bus (and whole
-   layout) is not necessarry, because it is simulated.
-
-   In the main form, each MTB-UNI or MTB-TTL board is represented as one column
-   of shapes. This column contains of 16 shapes = 16 inputs and outputs. You
-   can view the state of all the outputs and change state of the inputs by
-   clicking into the shape.
-
-      Black border -> input=0
-      Black inside -> output=0
-      Green inside -> output=1
-      Red border   -> input=1
-
-  This file provides outer interface of the library, almost all functions
-  are called to TForm_config (there is no technology class in the project).
+   This file provides outer interface of the library, almost all functions
+   are called to TForm_config (there is no technology class in the project).
 }
 
 // JCL_DEBUG_EXPERT_INSERTJDBG OFF
