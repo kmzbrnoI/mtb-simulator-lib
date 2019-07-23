@@ -435,6 +435,21 @@ begin
     Result := MTB_MODULE_INVALID_ADDR;
 end;
 
+function GetModuleInputsCount(module:Cardinal):Cardinal; stdcall;
+begin
+ if (module > _MAX_MTB) then
+   Exit(MTB_MODULE_INVALID_ADDR);
+ Result := 16;
+end;
+
+function GetModuleOutputsCount(module:Cardinal):Cardinal; stdcall;
+begin
+ if (module > _MAX_MTB) then
+   Exit(MTB_MODULE_INVALID_ADDR);
+ Result := 16;
+end;
+
+
 ////////////////////////////////////////////////////////////////////////////////
 
 function ApiSupportsVersion(version:Cardinal):Boolean; stdcall;
@@ -562,7 +577,7 @@ exports
   GetInput, GetOutput, SetOutput,
   GetDeviceCount, GetDeviceSerial,
   IsModule, IsModuleFailure, GetModuleCount, GetMaxModuleAddr, GetModuleType,
-  GetModuleName, GetModuleFW,
+  GetModuleName, GetModuleFW, GetModuleInputsCount, GetModuleOutputsCount,
   ApiSupportsVersion, ApiSetVersion, GetDeviceVersion, GetDriverVersion,
   BindBeforeOpen, BindAfterOpen, BindBeforeClose, BindAfterClose,
   BindBeforeStart, BindAfterStart, BindBeforeStop, BindAfterStop,
