@@ -552,6 +552,14 @@ end;
 
 // ----- setting events end -----
 ////////////////////////////////////////////////////////////////////////////////
+
+function IsSimulation():Boolean; stdcall;
+begin
+  Result := true;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
 // Exported functions:
 
 exports
@@ -567,7 +575,8 @@ exports
   BindBeforeOpen, BindAfterOpen, BindBeforeClose, BindAfterClose,
   BindBeforeStart, BindAfterStart, BindBeforeStop, BindAfterStop,
   BindOnError, BindOnLog, BindOnInputChanged, BindOnOutputChanged,
-  BindOnScanned, SetInput, GetInputType, GetOutputType;
+  BindOnScanned, SetInput, GetInputType, GetOutputType,
+  IsSimulation;
 
 
 begin
