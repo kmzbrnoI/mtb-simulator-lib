@@ -69,7 +69,7 @@ begin
  t_event.OnTimer  := callback;
  t_event.Interval := interval;
  t_event.Enabled  := true;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // configurations files load/save
@@ -580,9 +580,9 @@ exports
 
 
 begin
-  t_event := TTimer.Create(nil);
-  t_event.Enabled := false;
   Application.CreateForm(TFormConfig, FormConfig);
   Application.CreateForm(TF_Board, F_Board);
+  t_event := TTimer.Create(FormConfig);
+  t_event.Enabled := false;
 end.
 
