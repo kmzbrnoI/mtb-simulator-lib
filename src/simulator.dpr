@@ -55,7 +55,7 @@ const
   );
 
 type
-  TAddr = 0..191;   // Rozsah povolenych adres
+  TAddr = 0..255;   // Rozsah povolenych adres
 
 var
    // this timer simulates delays on open, close, start, stop
@@ -157,11 +157,9 @@ begin
   if (FormConfig.Status > TSimulatorStatus.closed) then
     Exit(MTB_ALREADY_OPENNED);
 
-  for i := FormConfig.pins_start to FormConfig.pins_end do
-   begin
+  for i := 0 to _MAX_MTB do
     Modules[i].failure := false;
-    F_Board.RG_Failure.ItemIndex := 0;
-   end;
+  F_Board.RG_Failure.ItemIndex := 0;
 
   try
     if (Assigned(LibEvents.BeforeOpen.event)) then LibEvents.BeforeOpen.event(FormConfig, LibEvents.BeforeOpen.data);
@@ -214,7 +212,7 @@ begin
     Exit(MTB_ALREADY_STARTED);
 
   cnt := 0;
-  for i := FormConfig.pins_start to FormConfig.pins_end do
+  for i := 0 to _MAX_MTB do
     if (Modules[i].exists) then
       Inc(cnt);
 
@@ -357,8 +355,7 @@ end;
 
 function IsModule(module:Cardinal):Boolean; stdcall;
 begin
-  if ((module >= FormConfig.pins_start) and (module <= FormConfig.pins_end)
-    and (FormConfig.Status >= TSimulatorStatus.stopped)) then
+  if (FormConfig.Status >= TSimulatorStatus.stopped) then
     Result := Modules[Module].exists
   else
     Result := false;
@@ -366,8 +363,7 @@ end;
 
 function IsModuleFailure(module:Cardinal):Boolean; stdcall;
 begin
-  if ((module >= FormConfig.pins_start) and (module <= FormConfig.pins_end)
-    and (FormConfig.Status >= TSimulatorStatus.stopped)) then
+  if (FormConfig.Status >= TSimulatorStatus.stopped) then
     Result := Modules[Module].failure
   else
     Result := false;
@@ -378,7 +374,7 @@ var i, cnt:Cardinal;
 begin
  cnt := 0;
 
- for i := FormConfig.pins_start to FormConfig.pins_end do
+ for i := 0 to _MAX_MTB do
    if (Modules[i].exists) then
      Inc(cnt);
 
@@ -392,8 +388,7 @@ end;
 
 function GetModuleType(Module:Cardinal):Integer; stdcall;
 begin
-  if ((module >= FormConfig.pins_start) and (module <= FormConfig.pins_end)
-    and (FormConfig.Status >= TSimulatorStatus.stopped)) then
+  if (FormConfig.Status >= TSimulatorStatus.stopped) then
     Result := Integer(Modules[Module].typ)
   else
     Result := MTB_MODULE_INVALID_ADDR;
@@ -411,8 +406,7 @@ end;
 
 function GetModuleFW(module:Cardinal; fw:PChar; fwLen:Cardinal):Integer; stdcall;
 begin
-  if ((module >= FormConfig.pins_start) and (module <= FormConfig.pins_end)
-    and (FormConfig.Status >= TSimulatorStatus.stopped)) then
+  if (FormConfig.Status >= TSimulatorStatus.stopped) then
   begin
     StrPLCopy(fw, Modules[Module].fw, fwLen);
     Result := 0;

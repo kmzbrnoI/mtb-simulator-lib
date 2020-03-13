@@ -88,7 +88,8 @@ type
     procedure B_ErrorClick(Sender: TObject);
     procedure SE_Err_boardKeyPress(Sender: TObject; var Key: Char);
   private
-    Cfgbtn:array[0.._MAX_MTB] of TButton;                        // configuration buttons
+    present: array[0.._MAX_MTB] of Boolean;
+    Cfgbtn: array[0.._MAX_MTB] of TButton;                        // configuration buttons
     pin: Array[0.._MAX_MTB, 0..16] of TShape;                    // pins (= ports)
 
     fstatus : TSimulatorStatus;                                  // simulation status
@@ -101,8 +102,6 @@ type
     procedure SetStatus(new:TSimulatorStatus);
   public
 
-   pins_start:Cardinal;
-   pins_end:Cardinal;
    config_fn:string;
 
     procedure RePaintPins();
@@ -134,7 +133,7 @@ var
 
 implementation
 
-uses Board, LibraryEvents;
+uses Board, LibraryEvents, IBUtils;
 
 {$R *.dfm}
 
@@ -146,7 +145,11 @@ begin
 end;
 
 procedure TFormConfig.FormCreate(Sender: TObject);
+var i: Integer;
 begin
+ for i := 0 to _MAX_MTB do
+   Self.present[i] := false;
+
  Self.config_fn := _DEFAULT_CFG_FILE;
  try
    Self.LoadData(Self.config_fn);
@@ -169,43 +172,53 @@ begin
 end;//procedure
 
 procedure TFormConfig.CreatePins();
-var i, j:Cardinal;
+var module, i, port:Cardinal;
 begin
- for i := Self.pins_start to Self.pins_end do
+ i := 0;
+ for module := 0 to _MAX_MTB do
   begin
-   Cfgbtn[i] := TButton.Create(FormConfig);
-   with (Cfgbtn[i]) do
+   if (not present[module]) then
+    begin
+     Cfgbtn[module] := nil;
+     for port := 0 to 15 do
+       pin[module, port] := nil;
+     continue;
+    end;
+
+   Cfgbtn[module] := TButton.Create(FormConfig);
+   with (Cfgbtn[module]) do
     begin
      Parent  := FormConfig;
      Top     := 5;
-     Left    := (i-Self.pins_start)*15 + 5;
+     Left    := i*15 + 5;
      Caption := '?';
      Height  := 25;
      Width   := 13;
-     Tag     := i;
+     Tag     := module;
      OnClick := Self.CfgBtnOnClick;
      OnMouseMove := Self.CfgBtnOnMove;
     end;
-   for j := 0 to 15 do
+   for port := 0 to 15 do
     begin
-     pin[i, j] := TShape.Create(FormConfig);
-     with pin[i, j] do
+     pin[module, port] := TShape.Create(FormConfig);
+     with pin[module, port] do
       begin
        Parent := FormConfig;
-       Left := (i-Self.pins_start)*15 + 5;
-       Top := j*15 + 35;
+       Left := i*15 + 5;
+       Top := port*15 + 35;
        Width := 13;
        Height := 13;
        Pen.Width := 2;
-       Tag := 16*i + j;
+       Tag := 16*module + port;
        OnMouseUp := ChangeInput;
        OnMouseMove := ShowAddress;
       end;
     end;
+   Inc(i);
   end;
  Self.RePaintPins();
 
- Self.ClientWidth := (((Self.pins_end-Self.pins_start)+1)*(15))+8;
+ Self.ClientWidth := (i*15)+8;
  Self.ClientHeight := (16*15)+40 + GB_Error.Height + 2;
 end;
 
@@ -235,23 +248,28 @@ end;
 
 procedure TFormConfig.RePaintPins();
 var
-  i, j: integer;
+  module, port: integer;
   sh: TShape;
 begin
-  for i := Self.pins_start to Self.pins_end do begin
-    for j := 0 to 15 do begin
-      sh := pin[i, j];
+  for module := 0 to _MAX_MTB do
+   begin
+    if (not present[module]) then
+      continue;
 
-      if ((Modules[i].ir shr (j div 4)) and $1 > 0) then
-        sh.Pen.Color := clFuchsia * vstup[i, j]
+    for port := 0 to 15 do
+     begin
+      sh := pin[module, port];
+
+      if ((Modules[module].ir shr (port div 4)) and $1 > 0) then
+        sh.Pen.Color := clFuchsia * vstup[module, port]
       else
-        sh.Pen.Color := clRed * vstup[i, j];
+        sh.Pen.Color := clRed * vstup[module, port];
 
-      if ((Modules[i].scom shr (j div 2)) and $1 > 0) then begin
-        sh.Brush.Color := clAqua * Integer(vystup[i, j] > 0);
-        sh.Hint := IntToStr(vystup[i, j]);
+      if ((Modules[module].scom shr (port div 2)) and $1 > 0) then begin
+        sh.Brush.Color := clAqua * Integer(vystup[module, port] > 0);
+        sh.Hint := IntToStr(vystup[module, port]);
       end else
-        sh.Brush.Color := clLime * Integer(vystup[i, j] > 0);
+        sh.Brush.Color := clLime * Integer(vystup[module, port] > 0);
     end;
   end;
 end;
@@ -270,26 +288,62 @@ end;
 procedure TFormConfig.LoadData(filename:string);
 var Ini:TMemIniFile;
     i:Integer;
+    ranges_str, range_str: string;
+    ranges, range: TStrings;
+    start, finish: Integer;
 begin
  Ini := TMemIniFile.Create(filename, TEncoding.UTF8);
+ ranges := TStringList.Create();
+ range := TStringList.Create();
  try
-   Self.pins_start := ini.ReadInteger('MTB', 'start', 0);
-   Self.pins_end   := ini.ReadInteger('MTB', 'end', 31);
+   ranges_str := ini.ReadString('MTB', 'ranges', '');
+   if (ranges_str = '') then
+    begin
+     // backward compatibility
+     ranges_str := ini.ReadString('MTB', 'start', '0') + '-' + ini.ReadString('MTB', 'end', '0');
+     if (ranges_str = '0-0') then
+       ranges_str := '0-31';
+    end;
 
-   if (Self.pins_end < Self.pins_start) then
-    Self.pins_end := Self.pins_start;
+   ExtractStrings([','], [], PChar(ranges_str), ranges);
+   for range_str in ranges do
+    begin
+     range.Clear();
+     ExtractStrings(['-'], [], PChar(range_str), range);
+     if (range.Count = 1) then
+       present[StrToInt(range[0])] := true
+     else if (range.Count = 2) then
+      begin
+       start := StrToInt(range[0]);
+       if (start < 0) then
+         start := 0;
+       if (start > _MAX_MTB) then
+         start := _MAX_MTB;
+
+       finish := StrToInt(range[1]);
+       if (finish < 0) then
+         finish := 0;
+       if (finish > _MAX_MTB) then
+         finish := _MAX_MTB;
+
+       for i := start to finish do
+         present[i] := true;
+      end;
+    end;
 
    for i := 0 to _MAX_MTB do
     begin
-     Modules[i].name   := Ini.ReadString('MTB'+IntToStr(i),'name','Simulator'+IntToStr(i));
+     Modules[i].name   := Ini.ReadString('MTB'+IntToStr(i),'name', 'Simulator'+IntToStr(i));
      Modules[i].typ    := TModulType(Ini.ReadInteger('MTB'+IntToStr(i),'typ', Integer(idMTB_UNI_ID)));
-     Modules[i].fw     := Ini.ReadString('MTB'+IntToStr(i),'fw','VIRTUAL');
-     Modules[i].exists := Ini.ReadBool('MTB'+IntToStr(i),'is',true);
-     Modules[i].ir     := Ini.ReadInteger('MTB'+IntToStr(i),'ir',0);
-     Modules[i].scom   := Ini.ReadInteger('MTB'+IntToStr(i),'scom',0);
+     Modules[i].fw     := Ini.ReadString('MTB'+IntToStr(i), 'fw', 'VIRTUAL');
+     Modules[i].exists := Ini.ReadBool('MTB'+IntToStr(i), 'is', present[i]);
+     Modules[i].ir     := Ini.ReadInteger('MTB'+IntToStr(i), 'ir', 0);
+     Modules[i].scom   := Ini.ReadInteger('MTB'+IntToStr(i), 'scom', 0);
     end;
  finally
    Ini.Free();
+   ranges.Free();
+   range.Free();
  end;
 end;//function
 
@@ -299,23 +353,20 @@ var Ini:TMemIniFile;
 begin
  Ini := TMemIniFile.Create(filename, TEncoding.UTF8);
  try
-   ini.WriteInteger('MTB', 'start', Self.pins_start);
-   ini.WriteInteger('MTB', 'end', Self.pins_end);
-
    for i := 0 to _MAX_MTB do
     begin
-     if (Modules[i].name <> '') then
-       Ini.WriteString('MTB'+IntToStr(i),'name',Modules[i].name);
+     if (Modules[i].name <> '') and (Modules[i].name <> 'Simulator'+IntToStr(i)) then
+       Ini.WriteString('MTB'+IntToStr(i), 'name', Modules[i].name);
      if (Modules[i].typ <> idMTB_UNI_ID) then
-       Ini.WriteInteger('MTB'+IntToStr(i),'typ', Integer(Modules[i].typ));
+       Ini.WriteInteger('MTB'+IntToStr(i), 'typ', Integer(Modules[i].typ));
      if (Modules[i].fw <> 'VIRTUAL') then
-       Ini.WriteString('MTB'+IntToStr(i),'fw',Modules[i].fw);
+       Ini.WriteString('MTB'+IntToStr(i), 'fw', Modules[i].fw);
      if (Modules[i].exists) then
-       Ini.WriteBool('MTB'+IntToStr(i),'is',Modules[i].exists);
+       Ini.WriteBool('MTB'+IntToStr(i), 'is', Modules[i].exists);
      if (Modules[i].ir <> 0) then
-       Ini.WriteInteger('MTB'+IntToStr(i),'ir',Modules[i].ir);
+       Ini.WriteInteger('MTB'+IntToStr(i), 'ir', Modules[i].ir);
      if (Modules[i].scom <> 0) then
-       Ini.WriteInteger('MTB'+IntToStr(i),'scom',Modules[i].scom);
+       Ini.WriteInteger('MTB'+IntToStr(i), 'scom', Modules[i].scom);
     end;
  finally
    Ini.UpdateFile();
