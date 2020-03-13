@@ -333,6 +333,9 @@ end;
 
 function SetInput(module, port: Cardinal; state: Integer): Integer; stdcall;
 begin
+  if (port > 15) then Exit(MTB_PORT_INVALID_NUMBER);
+  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(MTB_MODULE_INVALID_ADDR);
+
   Vstup[module,port] := state;
   if (Assigned(FormConfig)) then FormConfig.RepaintPins;
   Result := 0;
@@ -355,6 +358,8 @@ end;
 
 function IsModule(module:Cardinal):Boolean; stdcall;
 begin
+  if (not InRange(module, Low(TAddr), High(TAddr))) then Exit(false);
+
   if (FormConfig.Status >= TSimulatorStatus.stopped) then
     Result := Modules[Module].exists
   else
@@ -363,6 +368,8 @@ end;
 
 function IsModuleFailure(module:Cardinal):Boolean; stdcall;
 begin
+  if (not InRange(module, Low(TAddr), High(TAddr))) then Exit(false);
+
   if (FormConfig.Status >= TSimulatorStatus.stopped) then
     Result := Modules[Module].failure
   else
@@ -388,6 +395,8 @@ end;
 
 function GetModuleType(Module:Cardinal):Integer; stdcall;
 begin
+  if (not InRange(module, Low(TAddr), High(TAddr))) then Exit(MTB_MODULE_INVALID_ADDR);
+
   if (FormConfig.Status >= TSimulatorStatus.stopped) then
     Result := Integer(Modules[Module].typ)
   else
@@ -406,6 +415,8 @@ end;
 
 function GetModuleFW(module:Cardinal; fw:PChar; fwLen:Cardinal):Integer; stdcall;
 begin
+  if (not InRange(module, Low(TAddr), High(TAddr))) then Exit(MTB_MODULE_INVALID_ADDR);
+
   if (FormConfig.Status >= TSimulatorStatus.stopped) then
   begin
     StrPLCopy(fw, Modules[Module].fw, fwLen);
