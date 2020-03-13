@@ -227,6 +227,7 @@ var i, j:Integer;
 begin
  for i := 0 to _MAX_MTB do
   begin
+   present[i] := false;
    if (Assigned(Self.Cfgbtn[i])) then FreeAndNil(Self.Cfgbtn[i]);
    for j := 0 to 15 do
      if (Assigned(Self.pin[i, j])) then FreeAndNil(Self.pin[i, j]);

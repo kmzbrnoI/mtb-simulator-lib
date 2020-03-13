@@ -80,8 +80,8 @@ begin
    Exit(MTB_FILE_DEVICE_OPENED);
 
  try
-   FormConfig.LoadData(filename);
    FormConfig.FreePins();
+   FormConfig.LoadData(filename);
    FormConfig.CreatePins();
    FormConfig.config_fn := filename;
    Result := 0;
