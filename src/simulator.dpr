@@ -285,7 +285,7 @@ begin
   if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(MTB_MODULE_INVALID_ADDR);
   if (Modules[Module].failure) then Exit(MTB_MODULE_FAILED);
   if (port > 15) then Exit(MTB_PORT_INVALID_NUMBER);
-  if (state > 15) then Exit(MTB_INVALID_SCOM_CODE);
+  if (state > 255) then Exit(MTB_INVALID_SCOM_CODE);
   if (vystup[Module, Port] = state) then Exit(0);
 
   vystup[Module, Port] := State;
