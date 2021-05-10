@@ -32,6 +32,7 @@
 }
 
 // JCL_DEBUG_EXPERT_INSERTJDBG OFF
+// JCL_DEBUG_EXPERT_GENERATEJDBG OFF
 library simulator;
 
 uses
@@ -51,7 +52,7 @@ uses
 
 const
   API_SUPPORTED_VERSIONS: array[0..0] of Cardinal = (
-  	$0301 // v1.3
+  	$0401 // v1.4
   );
 
 type
@@ -77,7 +78,7 @@ end;
 function LoadConfig(filename:PChar):Integer; stdcall;
 begin
  if (FormConfig.Status > TSimulatorStatus.closed) then
-   Exit(MTB_FILE_DEVICE_OPENED);
+   Exit(RCS_FILE_DEVICE_OPENED);
 
  try
    FormConfig.FreePins();
@@ -87,9 +88,9 @@ begin
    Result := 0;
  except
    on E:EIniFileException do
-     Result := MTB_FILE_CANNOT_ACCESS;
+     Result := RCS_FILE_CANNOT_ACCESS;
    on E:Exception do
-     Result := MTB_GENERAL_EXCEPTION;
+     Result := RCS_GENERAL_EXCEPTION;
  end;
 end;
 
@@ -100,9 +101,9 @@ begin
    Result := 0;
  except
    on E:EIniFileException do
-     Result := MTB_FILE_CANNOT_ACCESS;
+     Result := RCS_FILE_CANNOT_ACCESS;
    on E:Exception do
-     Result := MTB_GENERAL_EXCEPTION;
+     Result := RCS_GENERAL_EXCEPTION;
  end;
 end;
 
@@ -155,7 +156,7 @@ function Open():Integer; stdcall;
 var i:Integer;
 begin
   if (FormConfig.Status > TSimulatorStatus.closed) then
-    Exit(MTB_ALREADY_OPENNED);
+    Exit(RCS_ALREADY_OPENNED);
 
   for i := 0 to _MAX_MTB do
     Modules[i].failure := false;
@@ -167,7 +168,7 @@ begin
     ActivateTimer(FormConfig.OnOpen, 1500);
     Result := 0;
   except
-    Result := MTB_GENERAL_EXCEPTION;
+    Result := RCS_GENERAL_EXCEPTION;
   end;
 end;
 
@@ -182,10 +183,10 @@ end;
 function Close():Integer; stdcall;
 begin
   if (FormConfig.Status < TSimulatorStatus.stopped) then
-    Exit(MTB_NOT_OPENED);
+    Exit(RCS_NOT_OPENED);
 
   if (FormConfig.Status = TSimulatorStatus.starting) then
-    Exit(MTB_SCANNING_NOT_FINISHED);
+    Exit(RCS_SCANNING_NOT_FINISHED);
 
   try
     if (Assigned(LibEvents.BeforeClose.event)) then LibEvents.BeforeClose.event(FormConfig, LibEvents.BeforeClose.data);
@@ -193,7 +194,7 @@ begin
     ActivateTimer(FormConfig.OnClose, 500);
     Result := 0;
   except
-    Result := MTB_GENERAL_EXCEPTION;
+    Result := RCS_GENERAL_EXCEPTION;
   end;
 end;
 
@@ -209,7 +210,7 @@ function Start():Integer; stdcall;
 var i, cnt:Cardinal;
 begin
   if (FormConfig.Status > TSimulatorStatus.stopped) then
-    Exit(MTB_ALREADY_STARTED);
+    Exit(RCS_ALREADY_STARTED);
 
   cnt := 0;
   for i := 0 to _MAX_MTB do
@@ -217,13 +218,13 @@ begin
       Inc(cnt);
 
   if (cnt = 0) then
-    Exit(MTB_NO_MODULES);
+    Exit(RCS_NO_MODULES);
 
   if (FormConfig.Status = TSimulatorStatus.opening) then
-    Exit(MTB_SCANNING_NOT_FINISHED);
+    Exit(RCS_SCANNING_NOT_FINISHED);
 
   if (FormConfig.Status < TSimulatorStatus.stopped) then
-    Exit(MTB_NOT_OPENED);
+    Exit(RCS_NOT_OPENED);
 
   try
     if (Assigned(LibEvents.BeforeStart.event)) then LibEvents.BeforeStart.event(FormConfig, LibEvents.BeforeStart.data);
@@ -237,7 +238,7 @@ begin
     ActivateTimer(FormConfig.OnStart, 500);
     Result := 0;
   except
-    Result := MTB_GENERAL_EXCEPTION;
+    Result := RCS_GENERAL_EXCEPTION;
   end;
 end;
 
@@ -247,7 +248,7 @@ end;
 function Stop():Integer; stdcall;
 begin
   if (FormConfig.Status < TSimulatorStatus.running) then
-    Exit(MTB_NOT_STARTED);
+    Exit(RCS_NOT_STARTED);
 
   try
     if (Assigned(LibEvents.BeforeStop.event)) then LibEvents.BeforeStop.event(FormConfig, LibEvents.BeforeStop.data);
@@ -257,7 +258,7 @@ begin
     ActivateTimer(FormConfig.OnStop, 500);
     Result := 0;
   except
-    Result := MTB_GENERAL_EXCEPTION;
+    Result := RCS_GENERAL_EXCEPTION;
   end;
 end;
 
@@ -270,22 +271,22 @@ end;
 
 function GetInput(module, port: Cardinal): Integer; stdcall;
 begin
-  if (FormConfig.Status = TSimulatorStatus.starting) then Exit(MTB_INPUT_NOT_YET_SCANNED);
-  if (FormConfig.Status <> TSimulatorStatus.running) then Exit(MTB_NOT_STARTED);
-  if (port > 15) then Exit(MTB_PORT_INVALID_NUMBER);
-  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(MTB_MODULE_INVALID_ADDR);
-  if (Modules[Module].failure) then Exit(MTB_MODULE_FAILED);  
+  if (FormConfig.Status = TSimulatorStatus.starting) then Exit(RCS_INPUT_NOT_YET_SCANNED);
+  if (FormConfig.Status <> TSimulatorStatus.running) then Exit(RCS_NOT_STARTED);
+  if (port > 15) then Exit(RCS_PORT_INVALID_NUMBER);
+  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(RCS_MODULE_INVALID_ADDR);
+  if (Modules[Module].failure) then Exit(RCS_MODULE_FAILED);
 
   Result := vstup[Module, Port];
 end;
 
 function SetOutput(module, port: Cardinal; state: Integer): Integer; stdcall;
 begin
-  if (FormConfig.Status <> TSimulatorStatus.running) then Exit(MTB_NOT_STARTED);
-  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(MTB_MODULE_INVALID_ADDR);
-  if (Modules[Module].failure) then Exit(MTB_MODULE_FAILED);
-  if (port > 15) then Exit(MTB_PORT_INVALID_NUMBER);
-  if (state > 255) then Exit(MTB_INVALID_SCOM_CODE);
+  if (FormConfig.Status <> TSimulatorStatus.running) then Exit(RCS_NOT_STARTED);
+  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(RCS_MODULE_INVALID_ADDR);
+  if (Modules[Module].failure) then Exit(RCS_MODULE_FAILED);
+  if (port > 15) then Exit(RCS_PORT_INVALID_NUMBER);
+  if (state > 255) then Exit(RCS_PORT_INVALID_VALUE);
   if (vystup[Module, Port] = state) then Exit(0);
 
   vystup[Module, Port] := State;
@@ -296,18 +297,18 @@ end;
 
 function GetOutput(module, port: Cardinal): Integer; stdcall;
 begin
-  if (FormConfig.Status <> TSimulatorStatus.running) then Exit(MTB_NOT_STARTED);
-  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(MTB_MODULE_INVALID_ADDR);
-  if (Modules[Module].failure) then Exit(MTB_MODULE_FAILED);
-  if (port > 15) then Exit(MTB_PORT_INVALID_NUMBER);
+  if (FormConfig.Status <> TSimulatorStatus.running) then Exit(RCS_NOT_STARTED);
+  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(RCS_MODULE_INVALID_ADDR);
+  if (Modules[Module].failure) then Exit(RCS_MODULE_FAILED);
+  if (port > 15) then Exit(RCS_PORT_INVALID_NUMBER);
 
   Result := vystup[Module, port];
 end;
 
 function GetInputType(module, port: Cardinal): Integer; stdcall;
 begin
-  if (port > 15) then Exit(MTB_PORT_INVALID_NUMBER);
-  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(MTB_MODULE_INVALID_ADDR);
+  if (port > 15) then Exit(RCS_PORT_INVALID_NUMBER);
+  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(RCS_MODULE_INVALID_ADDR);
 
   if ((Modules[module].ir shr (port div 4)) and $1 > 0) then
     Result := Integer(TRCSIPortType.iptIR)
@@ -317,8 +318,8 @@ end;
 
 function GetOutputType(module, port: Cardinal): Integer; stdcall;
 begin
-  if (port > 15) then Exit(MTB_PORT_INVALID_NUMBER);
-  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(MTB_MODULE_INVALID_ADDR);
+  if (port > 15) then Exit(RCS_PORT_INVALID_NUMBER);
+  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(RCS_MODULE_INVALID_ADDR);
 
   if ((Modules[module].scom shr (port div 2)) and $1 > 0) then
     Result := Integer(TRCSOPortType.optSCom)
@@ -333,8 +334,8 @@ end;
 
 function SetInput(module, port: Cardinal; state: Integer): Integer; stdcall;
 begin
-  if (port > 15) then Exit(MTB_PORT_INVALID_NUMBER);
-  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(MTB_MODULE_INVALID_ADDR);
+  if (port > 15) then Exit(RCS_PORT_INVALID_NUMBER);
+  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(RCS_MODULE_INVALID_ADDR);
 
   Vstup[module,port] := state;
   if (Assigned(FormConfig)) then FormConfig.RepaintPins;
@@ -395,12 +396,12 @@ end;
 
 function GetModuleType(Module:Cardinal):Integer; stdcall;
 begin
-  if (not InRange(module, Low(TAddr), High(TAddr))) then Exit(MTB_MODULE_INVALID_ADDR);
+  if (not InRange(module, Low(TAddr), High(TAddr))) then Exit(RCS_MODULE_INVALID_ADDR);
 
   if (FormConfig.Status >= TSimulatorStatus.stopped) then
     Result := Integer(Modules[Module].typ)
   else
-    Result := MTB_MODULE_INVALID_ADDR;
+    Result := RCS_MODULE_INVALID_ADDR;
 end;
 
 function GetModuleName(module:Cardinal; name:PChar; nameLen:Cardinal):Integer; stdcall;
@@ -410,32 +411,32 @@ begin
     StrPLCopy(name, Modules[Module].name, nameLen);
     Result := 0;
   end else
-    Result := MTB_MODULE_INVALID_ADDR;
+    Result := RCS_MODULE_INVALID_ADDR;
 end;
 
 function GetModuleFW(module:Cardinal; fw:PChar; fwLen:Cardinal):Integer; stdcall;
 begin
-  if (not InRange(module, Low(TAddr), High(TAddr))) then Exit(MTB_MODULE_INVALID_ADDR);
+  if (not InRange(module, Low(TAddr), High(TAddr))) then Exit(RCS_MODULE_INVALID_ADDR);
 
   if (FormConfig.Status >= TSimulatorStatus.stopped) then
   begin
     StrPLCopy(fw, Modules[Module].fw, fwLen);
     Result := 0;
   end else
-    Result := MTB_MODULE_INVALID_ADDR;
+    Result := RCS_MODULE_INVALID_ADDR;
 end;
 
 function GetModuleInputsCount(module:Cardinal):Cardinal; stdcall;
 begin
  if (module > _MAX_MTB) then
-   Exit(MTB_MODULE_INVALID_ADDR);
+   Exit(RCS_MODULE_INVALID_ADDR);
  Result := 16;
 end;
 
 function GetModuleOutputsCount(module:Cardinal):Cardinal; stdcall;
 begin
  if (module > _MAX_MTB) then
-   Exit(MTB_MODULE_INVALID_ADDR);
+   Exit(RCS_MODULE_INVALID_ADDR);
  Result := 16;
 end;
 
@@ -454,7 +455,7 @@ end;
 function ApiSetVersion(version:Cardinal):Integer; stdcall;
 begin
  if (not ApiSupportsVersion(version)) then
-   Exit(MTB_UNSUPPORTED_API_VERSION);
+   Exit(RCS_UNSUPPORTED_API_VERSION);
 
  api_version := version;
  Result := 0;
@@ -467,7 +468,7 @@ begin
     StrPLCopy(version, 'MTB-SIMULATOR-V', versionLen);
     Result := 0;
    end else
-    Result := MTB_DEVICE_DISCONNECTED;
+    Result := RCS_DEVICE_DISCONNECTED;
 end;//function
 
 procedure GetDriverVersion(version:PChar; versionLen:Cardinal) stdcall;

@@ -133,7 +133,7 @@ var
 
 implementation
 
-uses Board, LibraryEvents, IBUtils;
+uses Board, LibraryEvents;
 
 {$R *.dfm}
 

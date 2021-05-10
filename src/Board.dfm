@@ -58,7 +58,6 @@ object F_Board: TF_Board
     Width = 145
     Height = 21
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 1
     Items.Strings = (
       'MTB-UNI'

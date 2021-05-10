@@ -1,131 +1,199 @@
-﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-		<PropertyGroup>
-			<ProjectGuid>{EC795591-B474-446D-A272-8C5528B979BD}</ProjectGuid>
-			<MainSource>simulator.dpr</MainSource>
-			<Config Condition="'$(Config)'==''">Debug</Config>
-			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
-			<ProjectVersion>12.0</ProjectVersion>
-		</PropertyGroup>
-		<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
-			<Base>true</Base>
-		</PropertyGroup>
-		<PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_1)'!=''">
-			<Cfg_1>true</Cfg_1>
-			<CfgParent>Base</CfgParent>
-			<Base>true</Base>
-		</PropertyGroup>
-		<PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_2)'!=''">
-			<Cfg_2>true</Cfg_2>
-			<CfgParent>Base</CfgParent>
-			<Base>true</Base>
-		</PropertyGroup>
-		<PropertyGroup Condition="'$(Base)'!=''">
-			<DCC_BplOutput>..\outunit\</DCC_BplOutput>
-			<DCC_ImageBase>00400000</DCC_ImageBase>
-			<DCC_DependencyCheckOutputName>..\output\simulator.dll</DCC_DependencyCheckOutputName>
-			<DCC_UsePackage>vcl;rtl;vclx;DelphiX_for7;VclSmp;vclactnband;CPortLib7;Custom</DCC_UsePackage>
-			<DCC_IOChecking>false</DCC_IOChecking>
-			<DCC_Platform>x86</DCC_Platform>
-			<DCC_RangeChecking>true</DCC_RangeChecking>
-			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
-			<DCC_ExeOutput>..\output\</DCC_ExeOutput>
-			<DCC_N>true</DCC_N>
-			<DCC_K>false</DCC_K>
-			<GenDll>true</GenDll>
-			<DCC_S>false</DCC_S>
-			<DCC_DcuOutput>..\outunit\</DCC_DcuOutput>
-			<DCC_SymbolReferenceInfo>1</DCC_SymbolReferenceInfo>
-			<DCC_F>false</DCC_F>
-			<DCC_E>false</DCC_E>
-			<DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
-		</PropertyGroup>
-		<PropertyGroup Condition="'$(Cfg_1)'!=''">
-			<DCC_MapFile>3</DCC_MapFile>
-			<DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
-			<DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
-			<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
-			<DCC_DebugInformation>false</DCC_DebugInformation>
-		</PropertyGroup>
-		<PropertyGroup Condition="'$(Cfg_2)'!=''">
-			<DCC_MapFile>3</DCC_MapFile>
-			<DCC_RemoteDebug>true</DCC_RemoteDebug>
-			<DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
-			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
-		</PropertyGroup>
-		<ItemGroup>
-			<DelphiCompile Include="simulator.dpr">
-				<MainSource>MainSource</MainSource>
-			</DelphiCompile>
-			<DCCReference Include="fConfig.pas">
-				<Form>FormConfig</Form>
-			</DCCReference>
-			<DCCReference Include="Board.pas">
-				<Form>F_Board</Form>
-			</DCCReference>
-			<DCCReference Include="LibraryEvents.pas"/>
-			<DCCReference Include="Errors.pas"/>
-			<BuildConfiguration Include="Base">
-				<Key>Base</Key>
-			</BuildConfiguration>
-			<BuildConfiguration Include="Debug">
-				<Key>Cfg_2</Key>
-				<CfgParent>Base</CfgParent>
-			</BuildConfiguration>
-			<BuildConfiguration Include="Release">
-				<Key>Cfg_1</Key>
-				<CfgParent>Base</CfgParent>
-			</BuildConfiguration>
-		</ItemGroup>
-		<Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
-		<ProjectExtensions>
-			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
-			<Borland.ProjectType>VCLApplication</Borland.ProjectType>
-			<BorlandProject>
-				<Delphi.Personality>
-					<Source>
-						<Source Name="MainSource">simulator.dpr</Source>
-					</Source>
-					<Parameters>
-						<Parameters Name="UseLauncher">False</Parameters>
-						<Parameters Name="LoadAllSymbols">True</Parameters>
-						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
-						<Parameters Name="HostApplication">D:\UsersData\vlak\KMZ\hJOP\serverOther\hJOPserver.exe</Parameters>
-						<Parameters Name="DebugCWD">D:\UsersData\vlak\KMZ\hJOP\serverOther\</Parameters>
-					</Parameters>
-					<VersionInfo>
-						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>
-						<VersionInfo Name="AutoIncBuild">False</VersionInfo>
-						<VersionInfo Name="MajorVer">3</VersionInfo>
-						<VersionInfo Name="MinorVer">3</VersionInfo>
-						<VersionInfo Name="Release">1</VersionInfo>
-						<VersionInfo Name="Build">0</VersionInfo>
-						<VersionInfo Name="Debug">False</VersionInfo>
-						<VersionInfo Name="PreRelease">False</VersionInfo>
-						<VersionInfo Name="Special">False</VersionInfo>
-						<VersionInfo Name="Private">False</VersionInfo>
-						<VersionInfo Name="DLL">True</VersionInfo>
-						<VersionInfo Name="Locale">1029</VersionInfo>
-						<VersionInfo Name="CodePage">1250</VersionInfo>
-					</VersionInfo>
-					<VersionInfoKeys>
-						<VersionInfoKeys Name="CompanyName"/>
-						<VersionInfoKeys Name="FileDescription">Virtualizace MTB</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">3.3.1.0</VersionInfoKeys>
-						<VersionInfoKeys Name="InternalName">simulator.dll</VersionInfoKeys>
-						<VersionInfoKeys Name="LegalCopyright">Michal Petrilak, Jan Horacek</VersionInfoKeys>
-						<VersionInfoKeys Name="LegalTrademarks"/>
-						<VersionInfoKeys Name="OriginalFilename">simulator.dll</VersionInfoKeys>
-						<VersionInfoKeys Name="ProductName">Knihovna Simulator.dll</VersionInfoKeys>
-						<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
-						<VersionInfoKeys Name="Comments"/>
-					</VersionInfoKeys>
-					<Excluded_Packages>
-						<Excluded_Packages Name="$(BDS)\bin\dcloffice2k120.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-						<Excluded_Packages Name="$(BDS)\bin\dclofficexp120.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
-					</Excluded_Packages>
-				</Delphi.Personality>
-				<ModelSupport>False</ModelSupport>
-			</BorlandProject>
-			<ProjectFileVersion>12</ProjectFileVersion>
-		</ProjectExtensions>
-	</Project>
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{EC795591-B474-446D-A272-8C5528B979BD}</ProjectGuid>
+        <MainSource>simulator.dpr</MainSource>
+        <Config Condition="'$(Config)'==''">Release</Config>
+        <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+        <ProjectVersion>18.8</ProjectVersion>
+        <FrameworkType>VCL</FrameworkType>
+        <Base>True</Base>
+        <Platform Condition="'$(Platform)'==''">Win32</Platform>
+        <TargetedPlatforms>1</TargetedPlatforms>
+        <AppType>Library</AppType>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Base)'=='true') or '$(Base_Win32)'!=''">
+        <Base_Win32>true</Base_Win32>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Base)'=='true') or '$(Base_Win64)'!=''">
+        <Base_Win64>true</Base_Win64>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_1)'!=''">
+        <Cfg_1>true</Cfg_1>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_1)'=='true') or '$(Cfg_1_Win32)'!=''">
+        <Cfg_1_Win32>true</Cfg_1_Win32>
+        <CfgParent>Cfg_1</CfgParent>
+        <Cfg_1>true</Cfg_1>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_2)'!=''">
+        <Cfg_2>true</Cfg_2>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
+        <Cfg_2_Win32>true</Cfg_2_Win32>
+        <CfgParent>Cfg_2</CfgParent>
+        <Cfg_2>true</Cfg_2>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base)'!=''">
+        <DCC_BplOutput>..\outunit\</DCC_BplOutput>
+        <DCC_ImageBase>00400000</DCC_ImageBase>
+        <DCC_DependencyCheckOutputName>..\output\simulator.dll</DCC_DependencyCheckOutputName>
+        <DCC_UsePackage>vcl;rtl;vclx;DelphiX_for7;VclSmp;vclactnband;CPortLib7;Custom;$(DCC_UsePackage)</DCC_UsePackage>
+        <DCC_IOChecking>false</DCC_IOChecking>
+        <DCC_Platform>x86</DCC_Platform>
+        <DCC_RangeChecking>true</DCC_RangeChecking>
+        <DCC_ExeOutput>..\output\</DCC_ExeOutput>
+        <DCC_N>true</DCC_N>
+        <DCC_K>false</DCC_K>
+        <GenDll>true</GenDll>
+        <DCC_S>false</DCC_S>
+        <DCC_DcuOutput>..\outunit\</DCC_DcuOutput>
+        <DCC_SymbolReferenceInfo>1</DCC_SymbolReferenceInfo>
+        <DCC_F>false</DCC_F>
+        <DCC_E>false</DCC_E>
+        <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
+        <SanitizedProjectName>simulator</SanitizedProjectName>
+        <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;IBX;$(DCC_Namespace)</DCC_Namespace>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_MajorVer>3</VerInfo_MajorVer>
+        <VerInfo_MinorVer>3</VerInfo_MinorVer>
+        <VerInfo_Release>1</VerInfo_Release>
+        <VerInfo_DLL>true</VerInfo_DLL>
+        <VerInfo_Locale>1029</VerInfo_Locale>
+        <VerInfo_Keys>CompanyName=;FileDescription=Virtualizace MTB;FileVersion=3.3.1.0;InternalName=simulator.dll;LegalCopyright=Michal Petrilak, Jan Horacek;LegalTrademarks=;OriginalFilename=simulator.dll;ProductName=Knihovna Simulator.dll;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base_Win32)'!=''">
+        <DCC_Namespace>System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
+        <BT_BuildType>Debug</BT_BuildType>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <Debugger_HostApplication>D:\UsersData\vlak\KMZ\hJOP\serverOther\hJOPserver.exe</Debugger_HostApplication>
+        <Debugger_CWD>D:\UsersData\vlak\KMZ\hJOP\serverOther\</Debugger_CWD>
+        <Icon_MainIcon>simulator_Icon.ico</Icon_MainIcon>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base_Win64)'!=''">
+        <Icon_MainIcon>simulator_Icon.ico</Icon_MainIcon>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_1)'!=''">
+        <DCC_MapFile>3</DCC_MapFile>
+        <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+        <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
+        <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+        <DCC_DebugInformation>0</DCC_DebugInformation>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <VerInfo_MajorVer>1</VerInfo_MajorVer>
+        <VerInfo_MinorVer>0</VerInfo_MinorVer>
+        <VerInfo_Release>0</VerInfo_Release>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
+        <Manifest_File>(None)</Manifest_File>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2)'!=''">
+        <DCC_MapFile>3</DCC_MapFile>
+        <DCC_RemoteDebug>true</DCC_RemoteDebug>
+        <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
+        <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <VerInfo_MinorVer>4</VerInfo_MinorVer>
+        <VerInfo_Release>0</VerInfo_Release>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=3.4.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
+        <Manifest_File>(None)</Manifest_File>
+    </PropertyGroup>
+    <ItemGroup>
+        <DelphiCompile Include="$(MainSource)">
+            <MainSource>MainSource</MainSource>
+        </DelphiCompile>
+        <DCCReference Include="fConfig.pas">
+            <Form>FormConfig</Form>
+        </DCCReference>
+        <DCCReference Include="Board.pas">
+            <Form>F_Board</Form>
+        </DCCReference>
+        <DCCReference Include="LibraryEvents.pas"/>
+        <DCCReference Include="Errors.pas"/>
+        <BuildConfiguration Include="Debug">
+            <Key>Cfg_2</Key>
+            <CfgParent>Base</CfgParent>
+        </BuildConfiguration>
+        <BuildConfiguration Include="Base">
+            <Key>Base</Key>
+        </BuildConfiguration>
+        <BuildConfiguration Include="Release">
+            <Key>Cfg_1</Key>
+            <CfgParent>Base</CfgParent>
+        </BuildConfiguration>
+    </ItemGroup>
+    <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
+    <ProjectExtensions>
+        <Borland.Personality>Delphi.Personality.12</Borland.Personality>
+        <Borland.ProjectType>VCLApplication</Borland.ProjectType>
+        <BorlandProject>
+            <Delphi.Personality>
+                <Source>
+                    <Source Name="MainSource">simulator.dpr</Source>
+                </Source>
+                <Parameters>
+                    <Parameters Name="UseLauncher">False</Parameters>
+                    <Parameters Name="LoadAllSymbols">True</Parameters>
+                    <Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
+                    <Parameters Name="HostApplication">D:\UsersData\vlak\KMZ\hJOP\serverOther\hJOPserver.exe</Parameters>
+                    <Parameters Name="DebugCWD">D:\UsersData\vlak\KMZ\hJOP\serverOther\</Parameters>
+                </Parameters>
+                <VersionInfo>
+                    <VersionInfo Name="IncludeVerInfo">True</VersionInfo>
+                    <VersionInfo Name="AutoIncBuild">False</VersionInfo>
+                    <VersionInfo Name="MajorVer">3</VersionInfo>
+                    <VersionInfo Name="MinorVer">3</VersionInfo>
+                    <VersionInfo Name="Release">1</VersionInfo>
+                    <VersionInfo Name="Build">0</VersionInfo>
+                    <VersionInfo Name="Debug">False</VersionInfo>
+                    <VersionInfo Name="PreRelease">False</VersionInfo>
+                    <VersionInfo Name="Special">False</VersionInfo>
+                    <VersionInfo Name="Private">False</VersionInfo>
+                    <VersionInfo Name="DLL">True</VersionInfo>
+                    <VersionInfo Name="Locale">1029</VersionInfo>
+                    <VersionInfo Name="CodePage">1250</VersionInfo>
+                </VersionInfo>
+                <VersionInfoKeys>
+                    <VersionInfoKeys Name="CompanyName"/>
+                    <VersionInfoKeys Name="FileDescription">Virtualizace MTB</VersionInfoKeys>
+                    <VersionInfoKeys Name="FileVersion">3.3.1.0</VersionInfoKeys>
+                    <VersionInfoKeys Name="InternalName">simulator.dll</VersionInfoKeys>
+                    <VersionInfoKeys Name="LegalCopyright">Michal Petrilak, Jan Horacek</VersionInfoKeys>
+                    <VersionInfoKeys Name="LegalTrademarks"/>
+                    <VersionInfoKeys Name="OriginalFilename">simulator.dll</VersionInfoKeys>
+                    <VersionInfoKeys Name="ProductName">Knihovna Simulator.dll</VersionInfoKeys>
+                    <VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
+                    <VersionInfoKeys Name="Comments"/>
+                </VersionInfoKeys>
+                <Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k260.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp260.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                </Excluded_Packages>
+            </Delphi.Personality>
+            <ModelSupport>False</ModelSupport>
+            <Platforms>
+                <Platform value="Win32">True</Platform>
+                <Platform value="Win64">False</Platform>
+            </Platforms>
+        </BorlandProject>
+        <ProjectFileVersion>12</ProjectFileVersion>
+    </ProjectExtensions>
+    <Import Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')"/>
+</Project>
