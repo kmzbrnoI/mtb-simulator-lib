@@ -292,7 +292,7 @@ begin
     Exit(0);
 
   outputs[module, port] := state;
-  FormConfig.RepaintPins;
+  FormConfig.RepaintPin(module, port);
   if (Assigned(LibEvents.OnOutputChanged.event)) then
     LibEvents.OnOutputChanged.event(FormConfig, LibEvents.OnOutputChanged.data, module);
   Result := 0;
@@ -351,7 +351,7 @@ begin
 
   inputs[module, port] := state;
   if (Assigned(FormConfig)) then
-    FormConfig.RepaintPins;
+    FormConfig.RepaintPin(module, port);
   Result := 0;
 end;
 

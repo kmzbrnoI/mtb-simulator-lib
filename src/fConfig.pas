@@ -55,17 +55,9 @@ type
   end;
 
   TFormConfig = class(TForm)
-    GB_Error: TGroupBox;
-    Label1: TLabel;
-    SE_Err_id: TSpinEdit;
-    Label2: TLabel;
-    SE_Err_board: TSpinEdit;
-    B_Error: TButton;
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure B_ErrorClick(Sender: TObject);
-    procedure SE_Err_boardKeyPress(Sender: TObject; var Key: Char);
   private
     present: array [0 .. _MAX_MTB] of boolean;
     Cfgbtn: array [0 .. _MAX_MTB] of TButton; // configuration buttons
@@ -84,6 +76,7 @@ type
     config_fn: string;
 
     procedure RePaintPins();
+    procedure RePaintPin(module, port: Cardinal);
 
     procedure LoadData(filename: string);
     procedure SaveData(filename: string);
@@ -197,7 +190,7 @@ begin
   Self.RePaintPins();
 
   Self.ClientWidth := (i * 15) + 8;
-  Self.ClientHeight := (_PINS * 15) + 40 + GB_Error.Height + 2;
+  Self.ClientHeight := (_PINS * 15) + 40;
 end;
 
 procedure TFormConfig.FreePins();
@@ -221,7 +214,7 @@ begin
   port := (Sender as TShape).Tag mod _PINS;
 
   inputs[module, port] := inputs[module, port] XOR 1;
-  RePaintPins();
+  RePaintPin(module, port);
   if (Assigned(LibEvents.OnInputChanged.event)) then
     LibEvents.OnInputChanged.event(Self, LibEvents.OnInputChanged.data, module);
 end;
@@ -232,25 +225,31 @@ begin
   begin
     if (not present[module]) then
       continue;
-
     for var port := 0 to _PINS - 1 do
-    begin
-      var sh := pin[module, port];
-
-      if ((modules[module].irs shr port) and $1 > 0) then
-        sh.Pen.Color := clFuchsia * inputs[module, port]
-      else
-        sh.Pen.Color := clRed * inputs[module, port];
-
-      if ((modules[module].scoms shr port) and $1 > 0) then
-      begin
-        sh.Brush.Color := clAqua * Integer(outputs[module, port] > 0);
-        sh.Hint := IntToStr(module) + ':' + IntToStr(port) + ' : ' + IntToStr(outputs[module, port]);
-      end
-      else
-        sh.Brush.Color := clLime * Integer(outputs[module, port] > 0);
-    end;
+      Self.RePaintPin(module, port);
   end;
+end;
+
+
+procedure TFormConfig.RePaintPin(module, port: Cardinal);
+begin
+  if (not present[module]) then
+    Exit();
+
+  var sh := pin[module, port];
+
+  if ((modules[module].irs shr port) and $1 > 0) then
+    sh.Pen.Color := clFuchsia * inputs[module, port]
+  else
+    sh.Pen.Color := clRed * inputs[module, port];
+
+  if ((modules[module].scoms shr port) and $1 > 0) then
+  begin
+    sh.Brush.Color := clAqua * Integer(outputs[module, port] > 0);
+  end else
+    sh.Brush.Color := clLime * Integer(outputs[module, port] > 0);
+
+  sh.Hint := IntToStr(module) + ':' + IntToStr(port) + ' : ' + IntToStr(outputs[module, port]);
 end;
 
 procedure TFormConfig.ShowAddress(Sender: TObject; Shift: TShiftState; X, Y: Integer);
@@ -346,18 +345,6 @@ begin
     Ini.UpdateFile();
     Ini.Free();
   end;
-end;
-
-procedure TFormConfig.SE_Err_boardKeyPress(Sender: TObject; var Key: Char);
-begin
-  if (Key = #13) then
-    Self.B_ErrorClick(Self);
-end;
-
-procedure TFormConfig.B_ErrorClick(Sender: TObject);
-begin
-  if (Assigned(LibEvents.OnError.event)) then
-    LibEvents.OnError.event(Self, LibEvents.OnError.data, Self.SE_Err_id.Value, Self.SE_Err_board.Value, '');
 end;
 
 procedure TFormConfig.CfgBtnOnClick(Sender: TObject);
