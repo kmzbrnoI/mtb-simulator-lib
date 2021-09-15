@@ -264,7 +264,7 @@ begin
     Exit(RCS_INPUT_NOT_YET_SCANNED);
   if (FormConfig.Status <> TSimulatorStatus.running) then
     Exit(RCS_NOT_STARTED);
-  if (port > 15) then
+  if (port >= _PINS) then
     Exit(RCS_PORT_INVALID_NUMBER);
   if ((not InRange(module, Low(TAddr), High(TAddr))) or (not modules[module].exists)) then
     Exit(RCS_MODULE_INVALID_ADDR);
@@ -282,7 +282,7 @@ begin
     Exit(RCS_MODULE_INVALID_ADDR);
   if (modules[module].failure) then
     Exit(RCS_MODULE_FAILED);
-  if (port > 15) then
+  if (port >= _PINS) then
     Exit(RCS_PORT_INVALID_NUMBER);
   if (outputs[module, port] = state) then
     Exit(0);
@@ -302,7 +302,7 @@ begin
     Exit(RCS_MODULE_INVALID_ADDR);
   if (modules[module].failure) then
     Exit(RCS_MODULE_FAILED);
-  if (port > 15) then
+  if (port >= _PINS) then
     Exit(RCS_PORT_INVALID_NUMBER);
 
   Result := outputs[module, port];
@@ -310,7 +310,7 @@ end;
 
 function GetInputType(module, port: Cardinal): Integer; stdcall;
 begin
-  if (port > 15) then
+  if (port >= _PINS) then
     Exit(RCS_PORT_INVALID_NUMBER);
   if ((not InRange(module, Low(TAddr), High(TAddr))) or (not modules[module].exists)) then
     Exit(RCS_MODULE_INVALID_ADDR);
@@ -323,7 +323,7 @@ end;
 
 function GetOutputType(module, port: Cardinal): Integer; stdcall;
 begin
-  if (port > 15) then
+  if (port >= _PINS) then
     Exit(RCS_PORT_INVALID_NUMBER);
   if ((not InRange(module, Low(TAddr), High(TAddr))) or (not modules[module].exists)) then
     Exit(RCS_MODULE_INVALID_ADDR);
@@ -340,7 +340,7 @@ end;
 
 function SetInput(module, port: Cardinal; state: Integer): Integer; stdcall;
 begin
-  if (port > 15) then
+  if (port >= _PINS) then
     Exit(RCS_PORT_INVALID_NUMBER);
   if ((not InRange(module, Low(TAddr), High(TAddr))) or (not modules[module].exists)) then
     Exit(RCS_MODULE_INVALID_ADDR);
@@ -443,14 +443,14 @@ function GetModuleInputsCount(module: Cardinal): Cardinal; stdcall;
 begin
   if (module > _MAX_MTB) then
     Exit(RCS_MODULE_INVALID_ADDR);
-  Result := 16;
+  Result := _PINS;
 end;
 
 function GetModuleOutputsCount(module: Cardinal): Cardinal; stdcall;
 begin
   if (module > _MAX_MTB) then
     Exit(RCS_MODULE_INVALID_ADDR);
-  Result := 16;
+  Result := _PINS;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -483,7 +483,7 @@ begin
     Result := RCS_DEVICE_DISCONNECTED;
 end;
 
-procedure GetDriverVersion(version: PChar; versionLen: Cardinal)stdcall;
+procedure GetDriverVersion(version: PChar; versionLen: Cardinal); stdcall;
 begin
   StrPLCopy(version, 'SIMULATOR-DRIVER-V', versionLen);
 end;
