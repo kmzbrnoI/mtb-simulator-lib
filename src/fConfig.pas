@@ -186,6 +186,8 @@ begin
         Height := 13;
         Pen.Width := 2;
         Tag := _PINS * module + port;
+        ShowHint := true;
+        Hint := IntToStr(module) + ':' + IntToStr(port) + ' : 0';
         OnMouseUp := ChangeInput;
         OnMouseMove := ShowAddress;
       end;
@@ -243,7 +245,7 @@ begin
       if ((modules[module].scom shr (port div 2)) and $1 > 0) then
       begin
         sh.Brush.Color := clAqua * Integer(outputs[module, port] > 0);
-        sh.Hint := IntToStr(outputs[module, port]);
+        sh.Hint := IntToStr(module) + ':' + IntToStr(port) + ' : ' + IntToStr(outputs[module, port]);
       end
       else
         sh.Brush.Color := clLime * Integer(outputs[module, port] > 0);
@@ -349,7 +351,7 @@ procedure TFormConfig.SE_Err_boardKeyPress(Sender: TObject; var Key: Char);
 begin
   if (Key = #13) then
     Self.B_ErrorClick(Self);
-end; // procedure
+end;
 
 procedure TFormConfig.B_ErrorClick(Sender: TObject);
 begin
