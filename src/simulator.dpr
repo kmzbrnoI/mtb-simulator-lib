@@ -223,7 +223,6 @@ begin
     if ((F_Board.Showing) and (modules[F_Board.OpenIndex].exists)) then
       F_Board.RG_Exists.Enabled := false;
     F_Board.RG_Failure.Enabled := false;
-    F_Board.GB_IO_type.Enabled := false;
 
     ActivateTimer(FormConfig.OnStart, 500);
     Result := 0;
@@ -245,7 +244,6 @@ begin
       LibEvents.BeforeStop.event(FormConfig, LibEvents.BeforeStop.data);
     FormConfig.Status := TSimulatorStatus.stopping;
     F_Board.RG_Failure.Enabled := false;
-    F_Board.GB_IO_type.Enabled := true;
     ActivateTimer(FormConfig.OnStop, 500);
     Result := 0;
   except
@@ -286,8 +284,6 @@ begin
     Exit(RCS_MODULE_FAILED);
   if (port > 15) then
     Exit(RCS_PORT_INVALID_NUMBER);
-  if (state > 255) then
-    Exit(RCS_PORT_INVALID_VALUE);
   if (outputs[module, port] = state) then
     Exit(0);
 

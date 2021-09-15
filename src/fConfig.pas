@@ -55,9 +55,11 @@ type
   end;
 
   TFormConfig = class(TForm)
+    T_flick: TTimer;
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure T_flickTimer(Sender: TObject);
   private
     present: array [0 .. _MAX_MTB] of boolean;
     Cfgbtn: array [0 .. _MAX_MTB] of TButton; // configuration buttons
@@ -74,6 +76,7 @@ type
   public
 
     config_fn: string;
+    flick: Boolean;
 
     procedure RePaintPins();
     procedure RePaintPin(module, port: Cardinal);
@@ -97,8 +100,8 @@ var
   FormConfig: TFormConfig;
 
 var
-  inputs: Array [0 .. _MAX_MTB, 0 .. _PINS - 1] of Byte; // input states
-  outputs: Array [0 .. _MAX_MTB, 0 .. _PINS - 1] of Byte; // output states
+  inputs: Array [0 .. _MAX_MTB, 0 .. _PINS - 1] of Integer; // input states
+  outputs: Array [0 .. _MAX_MTB, 0 .. _PINS - 1] of Integer; // output states
   modules: array [0 .. _MAX_MTB] of TModule; // modules config
   api_version: Cardinal;
 
@@ -246,8 +249,9 @@ begin
   if ((modules[module].scoms shr port) and $1 > 0) then
   begin
     sh.Brush.Color := clAqua * Integer(outputs[module, port] > 0);
-  end else
-    sh.Brush.Color := clLime * Integer(outputs[module, port] > 0);
+  end else begin
+    sh.Brush.Color := clLime * Integer((outputs[module, port] > 0) and ((outputs[module, port] <= 1) or (flick)));
+  end;
 
   sh.Hint := IntToStr(module) + ':' + IntToStr(port) + ' : ' + IntToStr(outputs[module, port]);
 end;
@@ -260,6 +264,12 @@ begin
   port := (Sender as TShape).Tag mod _PINS;
 
   Caption := Format('%.3d / %.3d', [module, port])
+end;
+
+procedure TFormConfig.T_flickTimer(Sender: TObject);
+begin
+  Self.flick := not Self.flick;
+  Self.RePaintPins();
 end;
 
 procedure TFormConfig.LoadData(filename: string);

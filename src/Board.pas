@@ -191,6 +191,7 @@ begin
       modules[OpenIndex].scoms := modules[OpenIndex].scoms or (1 shl i);
 
   Self.Close();
+  FormConfig.SaveData(FormConfig.config_fn);
 end;
 
 procedure TF_Board.OpenForm(Module: Integer);
@@ -212,7 +213,6 @@ begin
 
   Self.RG_Exists.Enabled := (FormConfig.Status <> TSimulatorStatus.running) or (not modules[OpenIndex].exists);
   Self.RG_Failure.Enabled := (FormConfig.Status = TSimulatorStatus.running) and (modules[OpenIndex].exists);
-  Self.GB_IO_type.Enabled := (FormConfig.Status <> TSimulatorStatus.running);
 
   Self.E_Type.Text := modules[OpenIndex].typ;
 

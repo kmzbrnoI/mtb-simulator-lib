@@ -31,4 +31,10 @@ object FormConfig: TFormConfig
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
+  object T_flick: TTimer
+    Interval = 500
+    OnTimer = T_flickTimer
+    Left = 8
+    Top = 8
+  end
 end
