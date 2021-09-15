@@ -50,8 +50,8 @@ type
     fw: string;
     exists: boolean;
     failure: boolean;
-    ir: Cardinal;
-    scom: Cardinal;
+    irs: Cardinal;
+    scoms: Cardinal;
   end;
 
   TFormConfig = class(TForm)
@@ -237,12 +237,12 @@ begin
     begin
       var sh := pin[module, port];
 
-      if ((modules[module].ir shr (port div 4)) and $1 > 0) then
+      if ((modules[module].irs shr port) and $1 > 0) then
         sh.Pen.Color := clFuchsia * inputs[module, port]
       else
         sh.Pen.Color := clRed * inputs[module, port];
 
-      if ((modules[module].scom shr (port div 2)) and $1 > 0) then
+      if ((modules[module].scoms shr port) and $1 > 0) then
       begin
         sh.Brush.Color := clAqua * Integer(outputs[module, port] > 0);
         sh.Hint := IntToStr(module) + ':' + IntToStr(port) + ' : ' + IntToStr(outputs[module, port]);
@@ -313,8 +313,8 @@ begin
       modules[i].typ := Ini.ReadString('MTB' + IntToStr(i), 'typ', 'MTB-UNI');
       modules[i].fw := Ini.ReadString('MTB' + IntToStr(i), 'fw', 'VIRTUAL');
       modules[i].exists := Ini.ReadBool('MTB' + IntToStr(i), 'is', present[i]);
-      modules[i].ir := Ini.ReadInteger('MTB' + IntToStr(i), 'ir', 0);
-      modules[i].scom := Ini.ReadInteger('MTB' + IntToStr(i), 'scom', 0);
+      modules[i].irs := Ini.ReadInteger('MTB' + IntToStr(i), 'irs', 0);
+      modules[i].scoms := Ini.ReadInteger('MTB' + IntToStr(i), 'scoms', 0);
     end;
   finally
     Ini.Free();
@@ -329,6 +329,7 @@ begin
   try
     for var i := 0 to _MAX_MTB do
     begin
+      ini.EraseSection('MTB' + IntToStr(i));
       if (modules[i].name <> '') and (modules[i].name <> 'Simulator' + IntToStr(i)) then
         Ini.WriteString('MTB' + IntToStr(i), 'name', modules[i].name);
       Ini.WriteString('MTB' + IntToStr(i), 'typ', modules[i].typ);
@@ -336,10 +337,10 @@ begin
         Ini.WriteString('MTB' + IntToStr(i), 'fw', modules[i].fw);
       if (modules[i].exists) then
         Ini.WriteBool('MTB' + IntToStr(i), 'is', modules[i].exists);
-      if (modules[i].ir <> 0) then
-        Ini.WriteInteger('MTB' + IntToStr(i), 'ir', modules[i].ir);
-      if (modules[i].scom <> 0) then
-        Ini.WriteInteger('MTB' + IntToStr(i), 'scom', modules[i].scom);
+      if (modules[i].irs > 0) then
+        Ini.WriteInteger('MTB' + IntToStr(i), 'irs', modules[i].irs);
+      if (modules[i].scoms > 0) then
+        Ini.WriteInteger('MTB' + IntToStr(i), 'scoms', modules[i].scoms);
     end;
   finally
     Ini.UpdateFile();

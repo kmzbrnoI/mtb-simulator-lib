@@ -24,7 +24,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls;
+  Dialogs, StdCtrls, ExtCtrls, Generics.Collections;
 
 type
   TF_Board = class(TForm)
@@ -40,18 +40,47 @@ type
     RG_Exists: TRadioGroup;
     RG_Failure: TRadioGroup;
     GB_IO_type: TGroupBox;
-    chb_IR0: TCheckBox;
-    chb_IR3: TCheckBox;
-    chb_IR2: TCheckBox;
-    chb_IR1: TCheckBox;
-    chb_SCOM0: TCheckBox;
-    chb_SCOM1: TCheckBox;
-    chb_SCOM2: TCheckBox;
-    chb_SCOM3: TCheckBox;
+    CHB_IR0: TCheckBox;
+    CHB_IR3: TCheckBox;
+    CHB_IR2: TCheckBox;
+    CHB_IR1: TCheckBox;
     E_Type: TEdit;
+    CHB_IR6: TCheckBox;
+    CHB_IR5: TCheckBox;
+    CHB_IR4: TCheckBox;
+    CHB_IR7: TCheckBox;
+    CHB_IR15: TCheckBox;
+    CHB_IR14: TCheckBox;
+    CHB_IR13: TCheckBox;
+    CHB_IR12: TCheckBox;
+    CHB_IR11: TCheckBox;
+    CHB_IR10: TCheckBox;
+    CHB_IR9: TCheckBox;
+    CHB_IR8: TCheckBox;
+    CHB_SCOM0: TCheckBox;
+    CHB_SCOM1: TCheckBox;
+    CHB_SCOM2: TCheckBox;
+    CHB_SCOM3: TCheckBox;
+    CHB_SCOM4: TCheckBox;
+    CHB_SCOM5: TCheckBox;
+    CHB_SCOM7: TCheckBox;
+    CHB_SCOM6: TCheckBox;
+    CHB_SCOM8: TCheckBox;
+    CHB_SCOM9: TCheckBox;
+    CHB_SCOM10: TCheckBox;
+    CHB_SCOM11: TCheckBox;
+    CHB_SCOM12: TCheckBox;
+    CHB_SCOM13: TCheckBox;
+    CHB_SCOM14: TCheckBox;
+    CHB_SCOM15: TCheckBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_ApplyClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
+
+    chb_irs: TList<TCheckBox>;
+    chb_scoms: TList<TCheckBox>;
 
   public
     OpenIndex: Integer;
@@ -67,6 +96,51 @@ implementation
 uses fConfig, LibraryEvents, Errors;
 
 {$R *.dfm}
+
+procedure TF_Board.FormCreate(Sender: TObject);
+begin
+  Self.chb_irs := TList<TCheckBox>.Create();
+  Self.chb_irs.Add(Self.CHB_IR0);
+  Self.chb_irs.Add(Self.CHB_IR1);
+  Self.chb_irs.Add(Self.CHB_IR2);
+  Self.chb_irs.Add(Self.CHB_IR3);
+  Self.chb_irs.Add(Self.CHB_IR4);
+  Self.chb_irs.Add(Self.CHB_IR5);
+  Self.chb_irs.Add(Self.CHB_IR6);
+  Self.chb_irs.Add(Self.CHB_IR7);
+  Self.chb_irs.Add(Self.CHB_IR8);
+  Self.chb_irs.Add(Self.CHB_IR9);
+  Self.chb_irs.Add(Self.CHB_IR10);
+  Self.chb_irs.Add(Self.CHB_IR11);
+  Self.chb_irs.Add(Self.CHB_IR12);
+  Self.chb_irs.Add(Self.CHB_IR13);
+  Self.chb_irs.Add(Self.CHB_IR14);
+  Self.chb_irs.Add(Self.CHB_IR15);
+
+  Self.chb_scoms := TList<TCheckBox>.Create();
+  Self.chb_scoms.Add(Self.CHB_SCOM0);
+  Self.chb_scoms.Add(Self.CHB_SCOM1);
+  Self.chb_scoms.Add(Self.CHB_SCOM2);
+  Self.chb_scoms.Add(Self.CHB_SCOM3);
+  Self.chb_scoms.Add(Self.CHB_SCOM4);
+  Self.chb_scoms.Add(Self.CHB_SCOM5);
+  Self.chb_scoms.Add(Self.CHB_SCOM6);
+  Self.chb_scoms.Add(Self.CHB_SCOM7);
+  Self.chb_scoms.Add(Self.CHB_SCOM8);
+  Self.chb_scoms.Add(Self.CHB_SCOM9);
+  Self.chb_scoms.Add(Self.CHB_SCOM10);
+  Self.chb_scoms.Add(Self.CHB_SCOM11);
+  Self.chb_scoms.Add(Self.CHB_SCOM12);
+  Self.chb_scoms.Add(Self.CHB_SCOM13);
+  Self.chb_scoms.Add(Self.CHB_SCOM14);
+  Self.chb_scoms.Add(Self.CHB_SCOM15);
+end;
+
+procedure TF_Board.FormDestroy(Sender: TObject);
+begin
+  Self.chb_irs.Free();
+  Self.chb_scoms.Free();
+end;
 
 procedure TF_Board.B_ApplyClick(Sender: TObject);
 begin
@@ -106,25 +180,15 @@ begin
     1: modules[OpenIndex].exists := true;
   end;
 
-  modules[OpenIndex].ir := 0;
-  if (Self.chb_IR0.Checked) then
-    modules[OpenIndex].ir := modules[OpenIndex].ir or 1;
-  if (Self.chb_IR1.Checked) then
-    modules[OpenIndex].ir := modules[OpenIndex].ir or 2;
-  if (Self.chb_IR2.Checked) then
-    modules[OpenIndex].ir := modules[OpenIndex].ir or 4;
-  if (Self.chb_IR3.Checked) then
-    modules[OpenIndex].ir := modules[OpenIndex].ir or 8;
+  modules[OpenIndex].irs := 0;
+  for var i : Integer := 0 to Self.chb_irs.Count-1 do
+    if (Self.chb_irs[i].Checked) then
+      modules[OpenIndex].irs := modules[OpenIndex].irs or (1 shl i);
 
-  modules[OpenIndex].scom := 0;
-  if (Self.chb_SCOM0.Checked) then
-    modules[OpenIndex].scom := modules[OpenIndex].scom or 1;
-  if (Self.chb_SCOM1.Checked) then
-    modules[OpenIndex].scom := modules[OpenIndex].scom or 2;
-  if (Self.chb_SCOM2.Checked) then
-    modules[OpenIndex].scom := modules[OpenIndex].scom or 4;
-  if (Self.chb_SCOM3.Checked) then
-    modules[OpenIndex].scom := modules[OpenIndex].scom or 8;
+  modules[OpenIndex].scoms := 0;
+  for var i : Integer := 0 to Self.chb_scoms.Count-1 do
+    if (Self.chb_scoms[i].Checked) then
+      modules[OpenIndex].scoms := modules[OpenIndex].scoms or (1 shl i);
 
   Self.Close();
 end;
@@ -152,17 +216,26 @@ begin
 
   Self.E_Type.Text := modules[OpenIndex].typ;
 
-  Self.chb_IR0.Checked := Boolean(modules[OpenIndex].ir and $1);
-  Self.chb_IR1.Checked := Boolean((modules[OpenIndex].ir shr 1) and $1);
-  Self.chb_IR2.Checked := Boolean((modules[OpenIndex].ir shr 2) and $1);
-  Self.chb_IR3.Checked := Boolean((modules[OpenIndex].ir shr 3) and $1);
+  begin
+    var irs := modules[OpenIndex].irs;
+    for var i : Integer := 0 to Self.chb_irs.Count-1 do
+    begin
+      Self.chb_irs[i].Checked := ((irs and 1) > 0);
+      irs := irs shr 1;
+    end;
+  end;
 
-  Self.chb_SCOM0.Checked := Boolean(modules[OpenIndex].scom and $1);
-  Self.chb_SCOM1.Checked := Boolean((modules[OpenIndex].scom shr 1) and $1);
-  Self.chb_SCOM2.Checked := Boolean((modules[OpenIndex].scom shr 2) and $1);
-  Self.chb_SCOM3.Checked := Boolean((modules[OpenIndex].scom shr 3) and $1);
+  begin
+    var scoms := modules[OpenIndex].scoms;
+    for var i : Integer := 0 to Self.chb_scoms.Count-1 do
+    begin
+      Self.chb_scoms[i].Checked := ((scoms and 1) > 0);
+      scoms := scoms shr 1;
+    end;
+  end;
 
   Self.Caption := 'Upravit desku ' + IntToStr(Module);
+  Self.ActiveControl := Self.E_Name;
   Self.Show();
 end;
 

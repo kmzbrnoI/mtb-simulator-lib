@@ -319,7 +319,7 @@ begin
   if ((not InRange(module, Low(TAddr), High(TAddr))) or (not modules[module].exists)) then
     Exit(RCS_MODULE_INVALID_ADDR);
 
-  if ((modules[module].ir shr (port div 4)) and $1 > 0) then
+  if ((modules[module].irs shr port) and $1 > 0) then
     Result := Integer(TRCSIPortType.iptIR)
   else
     Result := Integer(TRCSIPortType.iptPlain);
@@ -332,7 +332,7 @@ begin
   if ((not InRange(module, Low(TAddr), High(TAddr))) or (not modules[module].exists)) then
     Exit(RCS_MODULE_INVALID_ADDR);
 
-  if ((modules[module].scom shr (port div 2)) and $1 > 0) then
+  if ((modules[module].scoms shr port) and $1 > 0) then
     Result := Integer(TRCSOPortType.optSCom)
   else
     Result := Integer(TRCSOPortType.optPlain);
