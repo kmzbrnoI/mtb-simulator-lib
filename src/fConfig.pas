@@ -9,7 +9,7 @@
 {
    LICENSE:
 
-   Copyright 2015-2018 Michal Petrilak, Jan Horacek
+   Copyright 2015-2021 Michal Petrilak, Jan Horacek
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ uses
 const
   _DEFAULT_CFG_FILE = 'rcs/simcfg.ini';        // Config file. Change MTB ranges to make form more synoptic.
   _MAX_MTB = 255;
+  _PINS = 16;
 
 type
   TMyEvent  = function(Sender:TObject):Integer of object; stdcall;
@@ -90,7 +91,7 @@ type
   private
     present: array[0.._MAX_MTB] of Boolean;
     Cfgbtn: array[0.._MAX_MTB] of TButton;                        // configuration buttons
-    pin: Array[0.._MAX_MTB, 0..16] of TShape;                    // pins (= ports)
+    pin: Array[0.._MAX_MTB, 0.._PINS-1] of TShape;                // pins (= ports)
 
     fstatus : TSimulatorStatus;                                  // simulation status
 
@@ -125,8 +126,8 @@ var
   FormConfig: TFormConfig;
 
 var
-  inputs: Array[0.._MAX_MTB, 0..15] of Byte;                  // input states
-  outputs: Array[0.._MAX_MTB, 0..15] of Byte;                 // output states
+  inputs: Array[0.._MAX_MTB, 0.._PINS-1] of Byte;             // input states
+  outputs: Array[0.._MAX_MTB, 0.._PINS-1] of Byte;            // output states
   modules: array[0.._MAX_MTB] of TModule;                     // modules config
   api_version: Cardinal;
 
@@ -180,7 +181,7 @@ begin
    if (not present[module]) then
     begin
      Cfgbtn[module] := nil;
-     for port := 0 to 15 do
+     for port := 0 to _PINS-1 do
        pin[module, port] := nil;
      continue;
     end;
@@ -198,7 +199,7 @@ begin
      OnClick := Self.CfgBtnOnClick;
      OnMouseMove := Self.CfgBtnOnMove;
     end;
-   for port := 0 to 15 do
+   for port := 0 to _PINS-1 do
     begin
      pin[module, port] := TShape.Create(FormConfig);
      with pin[module, port] do
@@ -209,7 +210,7 @@ begin
        Width := 13;
        Height := 13;
        Pen.Width := 2;
-       Tag := 16*module + port;
+       Tag := _PINS*module + port;
        OnMouseUp := ChangeInput;
        OnMouseMove := ShowAddress;
       end;
@@ -219,7 +220,7 @@ begin
  Self.RePaintPins();
 
  Self.ClientWidth := (i*15)+8;
- Self.ClientHeight := (16*15)+40 + GB_Error.Height + 2;
+ Self.ClientHeight := (_PINS*15)+40 + GB_Error.Height + 2;
 end;
 
 procedure TFormConfig.FreePins();
@@ -229,7 +230,7 @@ begin
   begin
    present[i] := false;
    if (Assigned(Self.Cfgbtn[i])) then FreeAndNil(Self.Cfgbtn[i]);
-   for j := 0 to 15 do
+   for j := 0 to _PINS-1 do
      if (Assigned(Self.pin[i, j])) then FreeAndNil(Self.pin[i, j]);
   end;
 end;
@@ -239,8 +240,8 @@ procedure TFormConfig.ChangeInput(Sender: TObject; Button: TMouseButton;
 var
   Module, Port: Integer;
 begin
-  Module := (Sender as TShape).Tag div 16;
-  Port   := (Sender as TShape).Tag mod 16;
+  Module := (Sender as TShape).Tag div _PINS;
+  Port   := (Sender as TShape).Tag mod _PINS;
 
   inputs[Module, Port] := inputs[Module, Port] XOR 1;
   RePaintPins();
@@ -257,7 +258,7 @@ begin
     if (not present[module]) then
       continue;
 
-    for port := 0 to 15 do
+    for port := 0 to _PINS-1 do
      begin
       sh := pin[module, port];
 
@@ -280,8 +281,8 @@ procedure TFormConfig.ShowAddress(Sender: TObject; Shift: TShiftState;
 var
   Module, Port: Integer;
 begin
-  Module := (Sender as TShape).Tag div 16;
-  Port   := (Sender as TShape).Tag mod 16;
+  Module := (Sender as TShape).Tag div _PINS;
+  Port   := (Sender as TShape).Tag mod _PINS;
 
   Caption := Format('%.3d / %.3d', [Module, Port])
 end;

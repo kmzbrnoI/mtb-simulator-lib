@@ -129,7 +129,7 @@ begin
  case (Self.RG_Exists.ItemIndex) of
   0:modules[OpenIndex].exists := false;
   1:modules[OpenIndex].exists := true;
- end;//case
+ end;
 
  modules[OpenIndex].ir := 0;
  if (Self.chb_IR0.Checked) then modules[OpenIndex].ir := modules[OpenIndex].ir or 1;
@@ -143,8 +143,8 @@ begin
  if (Self.chb_SCOM2.Checked) then modules[OpenIndex].scom := modules[OpenIndex].scom or 4;
  if (Self.chb_SCOM3.Checked) then modules[OpenIndex].scom := modules[OpenIndex].scom or 8;
 
- Self.Close()
-end;//procedure
+ Self.Close();
+end;
 
 procedure TF_Board.OpenForm(Module: Integer);
 begin
@@ -156,12 +156,12 @@ begin
  case (modules[OpenIndex].exists) of
   false:Self.RG_Exists.ItemIndex := 0;
   true :Self.RG_Exists.ItemIndex := 1;
- end;//case
+ end;
 
  case (modules[OpenIndex].failure) of
   false:Self.RG_Failure.ItemIndex := 0;
   true :Self.RG_Failure.ItemIndex := 1;
- end;//case
+ end;
 
  Self.RG_Exists.Enabled := (FormConfig.Status <> TSimulatorStatus.running) or (not modules[OpenIndex].exists);
  Self.RG_Failure.Enabled := (FormConfig.Status = TSimulatorStatus.running) and (modules[OpenIndex].exists);
@@ -188,12 +188,12 @@ begin
 
  Self.Caption := 'Editovat desku '+IntToStr(Module);
  Self.Show();
-end;//procedure
+end;
 
 procedure TF_Board.B_StornoClick(Sender: TObject);
 begin
  Self.Close();
-end;//procedure
+end;
 
 initialization
 
