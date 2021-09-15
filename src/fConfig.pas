@@ -37,16 +37,6 @@ type
   TMyErrorEvent = function(Sender: TObject; errValue: word; errAddr: Cardinal; errStr: string)
     : Integer of object; stdcall;
 
-  TModulType = (
-    idNone = $0,
-    idMTB_POT_ID = $10,
-    idMTB_REGP_ID = $30,
-    idMTB_UNI_ID = $40,
-    idMTB_UNIOUT_ID = $50,
-    idMTB_TTL_ID = $60,
-    idMTB_TTLOUT_ID = $70
-  );
-
   // Simulation status:
   TSimulatorStatus = (closed = 0, opening = 1, closing = 2, stopped = 3, starting = 4, running = 5, stopping = 6);
 
@@ -56,7 +46,7 @@ type
 
   TModule = record
     name: string;
-    typ: TModulType;
+    typ: string;
     fw: string;
     exists: boolean;
     failure: boolean;
@@ -128,13 +118,12 @@ uses Board, LibraryEvents;
 procedure TFormConfig.FormCloseQuery(Sender: TObject; var CanClose: boolean);
 begin
   CanClose := false;
-  Hide;
+  Self.Hide();
 end;
 
 procedure TFormConfig.FormCreate(Sender: TObject);
-var i: Integer;
 begin
-  for i := 0 to _MAX_MTB do
+  for var i := 0 to _MAX_MTB do
     Self.present[i] := false;
 
   Self.config_fn := _DEFAULT_CFG_FILE;
@@ -159,10 +148,10 @@ begin
 end;
 
 procedure TFormConfig.CreatePins();
-var module, i, port: Cardinal;
+var i, port: Cardinal;
 begin
   i := 0;
-  for module := 0 to _MAX_MTB do
+  for var module := 0 to _MAX_MTB do
   begin
     if (not present[module]) then
     begin
@@ -210,14 +199,13 @@ begin
 end;
 
 procedure TFormConfig.FreePins();
-var i, j: Integer;
 begin
-  for i := 0 to _MAX_MTB do
+  for var i := 0 to _MAX_MTB do
   begin
     present[i] := false;
     if (Assigned(Self.Cfgbtn[i])) then
       FreeAndNil(Self.Cfgbtn[i]);
-    for j := 0 to _PINS - 1 do
+    for var j := 0 to _PINS - 1 do
       if (Assigned(Self.pin[i, j])) then
         FreeAndNil(Self.pin[i, j]);
   end;
@@ -237,18 +225,15 @@ begin
 end;
 
 procedure TFormConfig.RePaintPins();
-var
-  module, port: Integer;
-  sh: TShape;
 begin
-  for module := 0 to _MAX_MTB do
+  for var module := 0 to _MAX_MTB do
   begin
     if (not present[module]) then
       continue;
 
-    for port := 0 to _PINS - 1 do
+    for var port := 0 to _PINS - 1 do
     begin
-      sh := pin[module, port];
+      var sh := pin[module, port];
 
       if ((modules[module].ir shr (port div 4)) and $1 > 0) then
         sh.Pen.Color := clFuchsia * inputs[module, port]
@@ -278,10 +263,8 @@ end;
 
 procedure TFormConfig.LoadData(filename: string);
 var Ini: TMemIniFile;
-  i: Integer;
   ranges_str, range_str: string;
   ranges, range: TStrings;
-  start, finish: Integer;
 begin
   Ini := TMemIniFile.Create(filename, TEncoding.UTF8);
   ranges := TStringList.Create();
@@ -305,27 +288,27 @@ begin
         present[StrToInt(range[0])] := true
       else if (range.Count = 2) then
       begin
-        start := StrToInt(range[0]);
+        var start := StrToInt(range[0]);
         if (start < 0) then
           start := 0;
         if (start > _MAX_MTB) then
           start := _MAX_MTB;
 
-        finish := StrToInt(range[1]);
+        var finish := StrToInt(range[1]);
         if (finish < 0) then
           finish := 0;
         if (finish > _MAX_MTB) then
           finish := _MAX_MTB;
 
-        for i := start to finish do
+        for var i := start to finish do
           present[i] := true;
       end;
     end;
 
-    for i := 0 to _MAX_MTB do
+    for var i := 0 to _MAX_MTB do
     begin
       modules[i].name := Ini.ReadString('MTB' + IntToStr(i), 'name', 'Simulator' + IntToStr(i));
-      modules[i].typ := TModulType(Ini.ReadInteger('MTB' + IntToStr(i), 'typ', Integer(idMTB_UNI_ID)));
+      modules[i].typ := Ini.ReadString('MTB' + IntToStr(i), 'typ', 'MTB-UNI');
       modules[i].fw := Ini.ReadString('MTB' + IntToStr(i), 'fw', 'VIRTUAL');
       modules[i].exists := Ini.ReadBool('MTB' + IntToStr(i), 'is', present[i]);
       modules[i].ir := Ini.ReadInteger('MTB' + IntToStr(i), 'ir', 0);
@@ -339,17 +322,14 @@ begin
 end; // function
 
 procedure TFormConfig.SaveData(filename: string);
-var Ini: TMemIniFile;
-  i: Integer;
 begin
-  Ini := TMemIniFile.Create(filename, TEncoding.UTF8);
+  var Ini := TMemIniFile.Create(filename, TEncoding.UTF8);
   try
-    for i := 0 to _MAX_MTB do
+    for var i := 0 to _MAX_MTB do
     begin
       if (modules[i].name <> '') and (modules[i].name <> 'Simulator' + IntToStr(i)) then
         Ini.WriteString('MTB' + IntToStr(i), 'name', modules[i].name);
-      if (modules[i].typ <> idMTB_UNI_ID) then
-        Ini.WriteInteger('MTB' + IntToStr(i), 'typ', Integer(modules[i].typ));
+      Ini.WriteString('MTB' + IntToStr(i), 'typ', modules[i].typ);
       if (modules[i].fw <> 'VIRTUAL') then
         Ini.WriteString('MTB' + IntToStr(i), 'fw', modules[i].fw);
       if (modules[i].exists) then

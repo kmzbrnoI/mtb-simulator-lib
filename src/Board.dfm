@@ -52,24 +52,9 @@ object F_Board: TF_Board
     Height = 13
     Caption = 'FW:'
   end
-  object CB_Type: TComboBox
-    Left = 80
-    Top = 70
-    Width = 145
-    Height = 21
-    Style = csDropDownList
-    TabOrder = 1
-    Items.Strings = (
-      'MTB-UNI'
-      'MTB-UNI out'
-      'MTB-TTL'
-      'MTB-TTL out'
-      'MTB-REG puls'
-      'MTB-POT')
-  end
   object E_Name: TEdit
     Left = 80
-    Top = 40
+    Top = 43
     Width = 145
     Height = 21
     TabOrder = 0
@@ -192,5 +177,12 @@ object F_Board: TF_Board
       Caption = 'S-COM 6,7'
       TabOrder = 7
     end
+  end
+  object E_Type: TEdit
+    Left = 80
+    Top = 70
+    Width = 145
+    Height = 21
+    TabOrder = 1
   end
 end

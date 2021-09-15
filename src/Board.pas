@@ -31,7 +31,6 @@ type
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
-    CB_Type: TComboBox;
     E_Name: TEdit;
     L_adresa: TLabel;
     B_Apply: TButton;
@@ -49,6 +48,7 @@ type
     chb_SCOM1: TCheckBox;
     chb_SCOM2: TCheckBox;
     chb_SCOM3: TCheckBox;
+    E_Type: TEdit;
     procedure B_StornoClick(Sender: TObject);
     procedure B_ApplyClick(Sender: TObject);
   private
@@ -70,12 +70,6 @@ uses fConfig, LibraryEvents, Errors;
 
 procedure TF_Board.B_ApplyClick(Sender: TObject);
 begin
-  if (Self.CB_Type.ItemIndex = -1) then
-  begin
-    MessageBox(F_Board.Handle, 'Vyberte typ MTB desky!', 'Nelze uložit', MB_OK OR MB_ICONWARNING);
-    Exit;
-  end;
-
   if ((not modules[OpenIndex].failure) and (Self.RG_Failure.ItemIndex = 1)) then
   begin
     // module is failing
@@ -104,17 +98,9 @@ begin
   end;
 
   modules[OpenIndex].name := Self.E_Name.Text;
-
-  case (Self.CB_Type.ItemIndex) of
-    0: modules[OpenIndex].typ := idMTB_UNI_ID;
-    1: modules[OpenIndex].typ := idMTB_UNIOUT_ID;
-    2: modules[OpenIndex].typ := idMTB_TTL_ID;
-    3: modules[OpenIndex].typ := idMTB_TTLOUT_ID;
-    4: modules[OpenIndex].typ := idMTB_REGP_ID;
-    5: modules[OpenIndex].typ := idMTB_POT_ID;
-  end;
-
+  modules[OpenIndex].typ := Self.E_Type.Text;
   modules[OpenIndex].fw := Self.E_FW.Text;
+
   case (Self.RG_Exists.ItemIndex) of
     0: modules[OpenIndex].exists := false;
     1: modules[OpenIndex].exists := true;
@@ -164,14 +150,7 @@ begin
   Self.RG_Failure.Enabled := (FormConfig.Status = TSimulatorStatus.running) and (modules[OpenIndex].exists);
   Self.GB_IO_type.Enabled := (FormConfig.Status <> TSimulatorStatus.running);
 
-  case (modules[OpenIndex].typ) of
-    idMTB_UNI_ID: Self.CB_Type.ItemIndex := 0;
-    idMTB_UNIOUT_ID: Self.CB_Type.ItemIndex := 1;
-    idMTB_TTL_ID: Self.CB_Type.ItemIndex := 2;
-    idMTB_TTLOUT_ID: Self.CB_Type.ItemIndex := 3;
-    idMTB_REGP_ID: Self.CB_Type.ItemIndex := 4;
-    idMTB_POT_ID: Self.CB_Type.ItemIndex := 5;
-  end;
+  Self.E_Type.Text := modules[OpenIndex].typ;
 
   Self.chb_IR0.Checked := Boolean(modules[OpenIndex].ir and $1);
   Self.chb_IR1.Checked := Boolean((modules[OpenIndex].ir shr 1) and $1);

@@ -142,12 +142,11 @@ end;
 // Open MTB, start scanning
 
 function Open(): Integer; stdcall;
-var i: Integer;
 begin
   if (FormConfig.Status > TSimulatorStatus.closed) then
     Exit(RCS_ALREADY_OPENNED);
 
-  for i := 0 to _MAX_MTB do
+  for var i := 0 to _MAX_MTB do
     modules[i].failure := false;
   F_Board.RG_Failure.ItemIndex := 0;
 
@@ -198,13 +197,12 @@ end;
 // Start communication
 
 function Start(): Integer; stdcall;
-var i, cnt: Cardinal;
 begin
   if (FormConfig.Status > TSimulatorStatus.stopped) then
     Exit(RCS_ALREADY_STARTED);
 
-  cnt := 0;
-  for i := 0 to _MAX_MTB do
+  var cnt := 0;
+  for var i := 0 to _MAX_MTB do
     if (modules[i].exists) then
       Inc(cnt);
 
@@ -395,11 +393,11 @@ begin
 end;
 
 function GetModuleCount(): Cardinal; stdcall;
-var i, cnt: Cardinal;
+var cnt: Cardinal;
 begin
   cnt := 0;
 
-  for i := 0 to _MAX_MTB do
+  for var i := 0 to _MAX_MTB do
     if (modules[i].exists) then
       Inc(cnt);
 
@@ -411,15 +409,13 @@ begin
   Result := _MAX_MTB;
 end;
 
-function GetModuleType(module: Cardinal): Integer; stdcall;
+function GetModuleTypeStr(module: Cardinal; typ: PChar; maxTypeLen: Cardinal): Integer; stdcall;
 begin
   if (not InRange(module, Low(TAddr), High(TAddr))) then
     Exit(RCS_MODULE_INVALID_ADDR);
 
-  if (FormConfig.Status >= TSimulatorStatus.stopped) then
-    Result := Integer(modules[module].typ)
-  else
-    Result := RCS_MODULE_INVALID_ADDR;
+  StrPLCopy(typ, modules[module].typ, maxTypeLen);
+  Result := 0;
 end;
 
 function GetModuleName(module: Cardinal; name: PChar; nameLen: Cardinal): Integer; stdcall;
@@ -464,9 +460,8 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 function ApiSupportsVersion(version: Cardinal): boolean; stdcall;
-var i: Integer;
 begin
-  for i := Low(API_SUPPORTED_VERSIONS) to High(API_SUPPORTED_VERSIONS) do
+  for var i := Low(API_SUPPORTED_VERSIONS) to High(API_SUPPORTED_VERSIONS) do
     if (API_SUPPORTED_VERSIONS[i] = version) then
       Exit(true);
   Result := false;
@@ -596,7 +591,7 @@ exports
   Open, OpenDevice, Close, Opened, Start, Stop, Started,
   GetInput, GetOutput, SetOutput,
   GetDeviceCount, GetDeviceSerial,
-  IsModule, IsModuleFailure, GetModuleCount, GetMaxModuleAddr, GetModuleType,
+  IsModule, IsModuleFailure, GetModuleCount, GetMaxModuleAddr, GetModuleTypeStr,
   GetModuleName, GetModuleFW, GetModuleInputsCount, GetModuleOutputsCount,
   ApiSupportsVersion, ApiSetVersion, GetDeviceVersion, GetDriverVersion,
   BindBeforeOpen, BindAfterOpen, BindBeforeClose, BindAfterClose,
