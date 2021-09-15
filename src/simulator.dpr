@@ -9,7 +9,7 @@
 {
    LICENSE:
 
-   Copyright 2015-2019 Michal Petrilak, Jan Horacek
+   Copyright 2015-2021 Michal Petrilak, Jan Horacek
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -159,7 +159,7 @@ begin
     Exit(RCS_ALREADY_OPENNED);
 
   for i := 0 to _MAX_MTB do
-    Modules[i].failure := false;
+    modules[i].failure := false;
   F_Board.RG_Failure.ItemIndex := 0;
 
   try
@@ -214,7 +214,7 @@ begin
 
   cnt := 0;
   for i := 0 to _MAX_MTB do
-    if (Modules[i].exists) then
+    if (modules[i].exists) then
       Inc(cnt);
 
   if (cnt = 0) then
@@ -230,7 +230,7 @@ begin
     if (Assigned(LibEvents.BeforeStart.event)) then LibEvents.BeforeStart.event(FormConfig, LibEvents.BeforeStart.data);
     FormConfig.status := TSimulatorStatus.starting;
 
-    if ((F_Board.Showing) and (Modules[F_Board.OpenIndex].exists)) then
+    if ((F_Board.Showing) and (modules[F_Board.OpenIndex].exists)) then
       F_Board.RG_Exists.Enabled := false;
     F_Board.RG_Failure.Enabled := false;
     F_Board.GB_IO_type.Enabled := false;
@@ -274,22 +274,22 @@ begin
   if (FormConfig.Status = TSimulatorStatus.starting) then Exit(RCS_INPUT_NOT_YET_SCANNED);
   if (FormConfig.Status <> TSimulatorStatus.running) then Exit(RCS_NOT_STARTED);
   if (port > 15) then Exit(RCS_PORT_INVALID_NUMBER);
-  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(RCS_MODULE_INVALID_ADDR);
-  if (Modules[Module].failure) then Exit(RCS_MODULE_FAILED);
+  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not modules[Module].exists)) then Exit(RCS_MODULE_INVALID_ADDR);
+  if (modules[Module].failure) then Exit(RCS_MODULE_FAILED);
 
-  Result := vstup[Module, Port];
+  Result := inputs[Module, Port];
 end;
 
 function SetOutput(module, port: Cardinal; state: Integer): Integer; stdcall;
 begin
   if (FormConfig.Status <> TSimulatorStatus.running) then Exit(RCS_NOT_STARTED);
-  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(RCS_MODULE_INVALID_ADDR);
-  if (Modules[Module].failure) then Exit(RCS_MODULE_FAILED);
+  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not modules[Module].exists)) then Exit(RCS_MODULE_INVALID_ADDR);
+  if (modules[Module].failure) then Exit(RCS_MODULE_FAILED);
   if (port > 15) then Exit(RCS_PORT_INVALID_NUMBER);
   if (state > 255) then Exit(RCS_PORT_INVALID_VALUE);
-  if (vystup[Module, Port] = state) then Exit(0);
+  if (outputs[Module, Port] = state) then Exit(0);
 
-  vystup[Module, Port] := State;
+  outputs[Module, Port] := State;
   FormConfig.RepaintPins;
   if (Assigned(LibEvents.OnOutputChanged.event)) then LibEvents.OnOutputChanged.event(FormConfig, LibEvents.OnOutputChanged.data, Module);
   Result := 0;
@@ -298,19 +298,19 @@ end;
 function GetOutput(module, port: Cardinal): Integer; stdcall;
 begin
   if (FormConfig.Status <> TSimulatorStatus.running) then Exit(RCS_NOT_STARTED);
-  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(RCS_MODULE_INVALID_ADDR);
-  if (Modules[Module].failure) then Exit(RCS_MODULE_FAILED);
+  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not modules[Module].exists)) then Exit(RCS_MODULE_INVALID_ADDR);
+  if (modules[Module].failure) then Exit(RCS_MODULE_FAILED);
   if (port > 15) then Exit(RCS_PORT_INVALID_NUMBER);
 
-  Result := vystup[Module, port];
+  Result := outputs[Module, port];
 end;
 
 function GetInputType(module, port: Cardinal): Integer; stdcall;
 begin
   if (port > 15) then Exit(RCS_PORT_INVALID_NUMBER);
-  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(RCS_MODULE_INVALID_ADDR);
+  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not modules[Module].exists)) then Exit(RCS_MODULE_INVALID_ADDR);
 
-  if ((Modules[module].ir shr (port div 4)) and $1 > 0) then
+  if ((modules[module].ir shr (port div 4)) and $1 > 0) then
     Result := Integer(TRCSIPortType.iptIR)
   else
     Result := Integer(TRCSIPortType.iptPlain);
@@ -319,9 +319,9 @@ end;
 function GetOutputType(module, port: Cardinal): Integer; stdcall;
 begin
   if (port > 15) then Exit(RCS_PORT_INVALID_NUMBER);
-  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(RCS_MODULE_INVALID_ADDR);
+  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not modules[Module].exists)) then Exit(RCS_MODULE_INVALID_ADDR);
 
-  if ((Modules[module].scom shr (port div 2)) and $1 > 0) then
+  if ((modules[module].scom shr (port div 2)) and $1 > 0) then
     Result := Integer(TRCSOPortType.optSCom)
   else
     Result := Integer(TRCSOPortType.optPlain);
@@ -335,9 +335,9 @@ end;
 function SetInput(module, port: Cardinal; state: Integer): Integer; stdcall;
 begin
   if (port > 15) then Exit(RCS_PORT_INVALID_NUMBER);
-  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not Modules[Module].exists)) then Exit(RCS_MODULE_INVALID_ADDR);
+  if ((not InRange(module, Low(TAddr), High(TAddr))) or (not modules[Module].exists)) then Exit(RCS_MODULE_INVALID_ADDR);
 
-  Vstup[module,port] := state;
+  inputs[module,port] := state;
   if (Assigned(FormConfig)) then FormConfig.RepaintPins;
   Result := 0;
 end;
@@ -362,7 +362,7 @@ begin
   if (not InRange(module, Low(TAddr), High(TAddr))) then Exit(false);
 
   if (FormConfig.Status >= TSimulatorStatus.stopped) then
-    Result := Modules[Module].exists
+    Result := modules[Module].exists
   else
     Result := false;
 end;
@@ -372,7 +372,7 @@ begin
   if (not InRange(module, Low(TAddr), High(TAddr))) then Exit(false);
 
   if (FormConfig.Status >= TSimulatorStatus.stopped) then
-    Result := Modules[Module].failure
+    Result := modules[Module].failure
   else
     Result := false;
 end;
@@ -383,7 +383,7 @@ begin
  cnt := 0;
 
  for i := 0 to _MAX_MTB do
-   if (Modules[i].exists) then
+   if (modules[i].exists) then
      Inc(cnt);
 
  Result := cnt;
@@ -399,7 +399,7 @@ begin
   if (not InRange(module, Low(TAddr), High(TAddr))) then Exit(RCS_MODULE_INVALID_ADDR);
 
   if (FormConfig.Status >= TSimulatorStatus.stopped) then
-    Result := Integer(Modules[Module].typ)
+    Result := Integer(modules[Module].typ)
   else
     Result := RCS_MODULE_INVALID_ADDR;
 end;
@@ -408,7 +408,7 @@ function GetModuleName(module:Cardinal; name:PChar; nameLen:Cardinal):Integer; s
 begin
   if (module <= 255) then
   begin
-    StrPLCopy(name, Modules[Module].name, nameLen);
+    StrPLCopy(name, modules[Module].name, nameLen);
     Result := 0;
   end else
     Result := RCS_MODULE_INVALID_ADDR;
@@ -420,7 +420,7 @@ begin
 
   if (FormConfig.Status >= TSimulatorStatus.stopped) then
   begin
-    StrPLCopy(fw, Modules[Module].fw, fwLen);
+    StrPLCopy(fw, modules[Module].fw, fwLen);
     Result := 0;
   end else
     Result := RCS_MODULE_INVALID_ADDR;

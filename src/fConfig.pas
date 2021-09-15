@@ -125,10 +125,10 @@ var
   FormConfig: TFormConfig;
 
 var
-  vstup: Array[0.._MAX_MTB, 0..15] of Byte;                  // input states
-  vystup: Array[0.._MAX_MTB, 0..15] of Byte;                 // output states
-  Modules:array[0.._MAX_MTB] of TModule;                     // modules config
-  api_version:Cardinal;
+  inputs: Array[0.._MAX_MTB, 0..15] of Byte;                  // input states
+  outputs: Array[0.._MAX_MTB, 0..15] of Byte;                 // output states
+  modules: array[0.._MAX_MTB] of TModule;                     // modules config
+  api_version: Cardinal;
 
 
 implementation
@@ -242,7 +242,7 @@ begin
   Module := (Sender as TShape).Tag div 16;
   Port   := (Sender as TShape).Tag mod 16;
 
-  vstup[Module, Port] := vstup[Module, Port] XOR 1;
+  inputs[Module, Port] := inputs[Module, Port] XOR 1;
   RePaintPins();
   if (Assigned(LibEvents.OnInputChanged.event)) then LibEvents.OnInputChanged.event(Self, LibEvents.OnInputChanged.data, Module);
 end;
@@ -261,16 +261,16 @@ begin
      begin
       sh := pin[module, port];
 
-      if ((Modules[module].ir shr (port div 4)) and $1 > 0) then
-        sh.Pen.Color := clFuchsia * vstup[module, port]
+      if ((modules[module].ir shr (port div 4)) and $1 > 0) then
+        sh.Pen.Color := clFuchsia * inputs[module, port]
       else
-        sh.Pen.Color := clRed * vstup[module, port];
+        sh.Pen.Color := clRed * inputs[module, port];
 
-      if ((Modules[module].scom shr (port div 2)) and $1 > 0) then begin
-        sh.Brush.Color := clAqua * Integer(vystup[module, port] > 0);
-        sh.Hint := IntToStr(vystup[module, port]);
+      if ((modules[module].scom shr (port div 2)) and $1 > 0) then begin
+        sh.Brush.Color := clAqua * Integer(outputs[module, port] > 0);
+        sh.Hint := IntToStr(outputs[module, port]);
       end else
-        sh.Brush.Color := clLime * Integer(vystup[module, port] > 0);
+        sh.Brush.Color := clLime * Integer(outputs[module, port] > 0);
     end;
   end;
 end;
@@ -334,12 +334,12 @@ begin
 
    for i := 0 to _MAX_MTB do
     begin
-     Modules[i].name   := Ini.ReadString('MTB'+IntToStr(i),'name', 'Simulator'+IntToStr(i));
-     Modules[i].typ    := TModulType(Ini.ReadInteger('MTB'+IntToStr(i),'typ', Integer(idMTB_UNI_ID)));
-     Modules[i].fw     := Ini.ReadString('MTB'+IntToStr(i), 'fw', 'VIRTUAL');
-     Modules[i].exists := Ini.ReadBool('MTB'+IntToStr(i), 'is', present[i]);
-     Modules[i].ir     := Ini.ReadInteger('MTB'+IntToStr(i), 'ir', 0);
-     Modules[i].scom   := Ini.ReadInteger('MTB'+IntToStr(i), 'scom', 0);
+     modules[i].name   := Ini.ReadString('MTB'+IntToStr(i),'name', 'Simulator'+IntToStr(i));
+     modules[i].typ    := TModulType(Ini.ReadInteger('MTB'+IntToStr(i),'typ', Integer(idMTB_UNI_ID)));
+     modules[i].fw     := Ini.ReadString('MTB'+IntToStr(i), 'fw', 'VIRTUAL');
+     modules[i].exists := Ini.ReadBool('MTB'+IntToStr(i), 'is', present[i]);
+     modules[i].ir     := Ini.ReadInteger('MTB'+IntToStr(i), 'ir', 0);
+     modules[i].scom   := Ini.ReadInteger('MTB'+IntToStr(i), 'scom', 0);
     end;
  finally
    Ini.Free();
@@ -356,18 +356,18 @@ begin
  try
    for i := 0 to _MAX_MTB do
     begin
-     if (Modules[i].name <> '') and (Modules[i].name <> 'Simulator'+IntToStr(i)) then
-       Ini.WriteString('MTB'+IntToStr(i), 'name', Modules[i].name);
-     if (Modules[i].typ <> idMTB_UNI_ID) then
-       Ini.WriteInteger('MTB'+IntToStr(i), 'typ', Integer(Modules[i].typ));
-     if (Modules[i].fw <> 'VIRTUAL') then
-       Ini.WriteString('MTB'+IntToStr(i), 'fw', Modules[i].fw);
-     if (Modules[i].exists) then
-       Ini.WriteBool('MTB'+IntToStr(i), 'is', Modules[i].exists);
-     if (Modules[i].ir <> 0) then
-       Ini.WriteInteger('MTB'+IntToStr(i), 'ir', Modules[i].ir);
-     if (Modules[i].scom <> 0) then
-       Ini.WriteInteger('MTB'+IntToStr(i), 'scom', Modules[i].scom);
+     if (modules[i].name <> '') and (modules[i].name <> 'Simulator'+IntToStr(i)) then
+       Ini.WriteString('MTB'+IntToStr(i), 'name', modules[i].name);
+     if (modules[i].typ <> idMTB_UNI_ID) then
+       Ini.WriteInteger('MTB'+IntToStr(i), 'typ', Integer(modules[i].typ));
+     if (modules[i].fw <> 'VIRTUAL') then
+       Ini.WriteString('MTB'+IntToStr(i), 'fw', modules[i].fw);
+     if (modules[i].exists) then
+       Ini.WriteBool('MTB'+IntToStr(i), 'is', modules[i].exists);
+     if (modules[i].ir <> 0) then
+       Ini.WriteInteger('MTB'+IntToStr(i), 'ir', modules[i].ir);
+     if (modules[i].scom <> 0) then
+       Ini.WriteInteger('MTB'+IntToStr(i), 'scom', modules[i].scom);
     end;
  finally
    Ini.UpdateFile();
@@ -434,7 +434,7 @@ begin
   status := TSimulatorStatus.running;
 
   if (F_Board.Showing) then
-    F_Board.RG_Failure.Enabled := Modules[F_Board.OpenIndex].exists;
+    F_Board.RG_Failure.Enabled := modules[F_Board.OpenIndex].exists;
 
   if (Assigned(LibEvents.AfterStart.event)) then LibEvents.AfterStart.event(FormConfig, LibEvents.AfterStart.data);
 
