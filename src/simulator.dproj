@@ -4,7 +4,7 @@
         <MainSource>simulator.dpr</MainSource>
         <Config Condition="'$(Config)'==''">Release</Config>
         <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
-        <ProjectVersion>18.8</ProjectVersion>
+        <ProjectVersion>19.2</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>

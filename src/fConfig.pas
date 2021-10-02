@@ -341,7 +341,8 @@ begin
       ini.EraseSection('MTB' + IntToStr(i));
       if (modules[i].name <> '') and (modules[i].name <> 'Simulator' + IntToStr(i)) then
         Ini.WriteString('MTB' + IntToStr(i), 'name', modules[i].name);
-      Ini.WriteString('MTB' + IntToStr(i), 'typ', modules[i].typ);
+      if ((modules[i].typ <> 'MTB-UNI') or (modules[i].exists)) then
+        Ini.WriteString('MTB' + IntToStr(i), 'typ', modules[i].typ);
       if (modules[i].fw <> 'VIRTUAL') then
         Ini.WriteString('MTB' + IntToStr(i), 'fw', modules[i].fw);
       if (modules[i].exists) then
