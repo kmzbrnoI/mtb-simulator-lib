@@ -55,6 +55,7 @@ type
     OnError: TMyErrorEvent;
     OnInputChanged: TMyModuleChangeEvent;
     OnOutputChanged: TMyModuleChangeEvent;
+    OnModuleChanged: TMyModuleChangeEvent;
     OnScanned: TMyNotifyEvent;
   end;
 

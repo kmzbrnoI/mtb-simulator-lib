@@ -37,8 +37,6 @@ type
     B_Storno: TButton;
     Label4: TLabel;
     E_FW: TEdit;
-    RG_Exists: TRadioGroup;
-    RG_Failure: TRadioGroup;
     GB_IO_type: TGroupBox;
     CHB_IR0: TCheckBox;
     CHB_IR3: TCheckBox;
@@ -73,6 +71,10 @@ type
     CHB_SCOM13: TCheckBox;
     CHB_SCOM14: TCheckBox;
     CHB_SCOM15: TCheckBox;
+    CHB_Exists: TCheckBox;
+    CHB_failure: TCheckBox;
+    CHB_Error: TCheckBox;
+    CHB_Warning: TCheckBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_ApplyClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -144,41 +146,46 @@ end;
 
 procedure TF_Board.B_ApplyClick(Sender: TObject);
 begin
-  if ((not modules[OpenIndex].failure) and (Self.RG_Failure.ItemIndex = 1)) then
+  if ((not modules[OpenIndex].failure) and (Self.CHB_failure.Checked)) then
   begin
     // module is failing
     modules[OpenIndex].failure := true;
     if (Assigned(LibEvents.OnError.event)) then
       LibEvents.OnError.event(Self, LibEvents.OnError.data, RCS_MODULE_FAILED, OpenIndex, 'Modul nekomunikuje');
     if (Assigned(LibEvents.OnOutputChanged.event)) then
-    begin
       LibEvents.OnOutputChanged.event(FormConfig, LibEvents.OnOutputChanged.data, OpenIndex);
-      LibEvents.OnInputChanged.event(FormConfig, LibEvents.OnOutputChanged.data, OpenIndex);
-    end;
+    if (Assigned(LibEvents.OnInputChanged.event)) then
+      LibEvents.OnInputChanged.event(FormConfig, LibEvents.OnInputChanged.data, OpenIndex);
+    if (Assigned(LibEvents.OnModuleChanged.event)) then
+      LibEvents.OnModuleChanged.event(FormConfig, LibEvents.OnModuleChanged.data, OpenIndex);
   end;
-  if (((modules[OpenIndex].failure) and (Self.RG_Failure.ItemIndex = 0)) or
+  if (((modules[OpenIndex].failure) and (not Self.CHB_failure.Checked)) or
     ((FormConfig.Status = TSimulatorStatus.running) and (not modules[OpenIndex].exists) and
-    (Self.RG_Exists.ItemIndex = 1))) then
+    (Self.CHB_Exists.Checked))) then
   begin
     // module is restored
     modules[OpenIndex].failure := false;
     if (Assigned(LibEvents.OnError.event)) then
       LibEvents.OnError.event(Self, LibEvents.OnError.data, RCS_MODULE_RESTORED, OpenIndex, 'Modul komunikuje');
     if (Assigned(LibEvents.OnOutputChanged.event)) then
-    begin
       LibEvents.OnOutputChanged.event(FormConfig, LibEvents.OnOutputChanged.data, OpenIndex);
-      LibEvents.OnInputChanged.event(FormConfig, LibEvents.OnOutputChanged.data, OpenIndex);
-    end;
+    if (Assigned(LibEvents.OnInputChanged.event)) then
+      LibEvents.OnInputChanged.event(FormConfig, LibEvents.OnInputChanged.data, OpenIndex);
+    if (Assigned(LibEvents.OnModuleChanged.event)) then
+      LibEvents.OnModuleChanged.event(FormConfig, LibEvents.OnModuleChanged.data, OpenIndex);
   end;
 
   modules[OpenIndex].name := Self.E_Name.Text;
   modules[OpenIndex].typ := Self.E_Type.Text;
   modules[OpenIndex].fw := Self.E_FW.Text;
 
-  case (Self.RG_Exists.ItemIndex) of
-    0: modules[OpenIndex].exists := false;
-    1: modules[OpenIndex].exists := true;
-  end;
+  modules[OpenIndex].exists := Self.CHB_Exists.Checked;
+
+  var errorChanged: Boolean := (modules[OpenIndex].error <> Self.CHB_Error.Checked);
+  modules[OpenIndex].error := Self.CHB_Error.Checked;
+
+  var warningChanged: Boolean := (modules[OpenIndex].warning <> Self.CHB_Warning.Checked);
+  modules[OpenIndex].warning := Self.CHB_Warning.Checked;
 
   modules[OpenIndex].irs := 0;
   for var i : Integer := 0 to Self.chb_irs.Count-1 do
@@ -190,8 +197,11 @@ begin
     if (Self.chb_scoms[i].Checked) then
       modules[OpenIndex].scoms := modules[OpenIndex].scoms or (1 shl i);
 
-  Self.Close();
   FormConfig.SaveData(FormConfig.config_fn);
+
+  if ((errorChanged) or (warningChanged)) then
+    if (Assigned(LibEvents.OnModuleChanged.event)) then
+      LibEvents.OnModuleChanged.event(FormConfig, LibEvents.OnModuleChanged.data, OpenIndex);
 end;
 
 procedure TF_Board.OpenForm(Module: Integer);
@@ -201,18 +211,10 @@ begin
   Self.E_Name.Text := modules[OpenIndex].name;
   Self.E_FW.Text := modules[OpenIndex].fw;
 
-  case (modules[OpenIndex].exists) of
-    false: Self.RG_Exists.ItemIndex := 0;
-    true: Self.RG_Exists.ItemIndex := 1;
-  end;
-
-  case (modules[OpenIndex].failure) of
-    false: Self.RG_Failure.ItemIndex := 0;
-    true: Self.RG_Failure.ItemIndex := 1;
-  end;
-
-  Self.RG_Exists.Enabled := (FormConfig.Status <> TSimulatorStatus.running) or (not modules[OpenIndex].exists);
-  Self.RG_Failure.Enabled := (FormConfig.Status = TSimulatorStatus.running) and (modules[OpenIndex].exists);
+  Self.CHB_Exists.Checked := modules[OpenIndex].exists;
+  Self.CHB_failure.Checked := modules[OpenIndex].failure;
+  Self.CHB_Error.Checked := modules[OpenIndex].error;
+  Self.CHB_Warning.Checked := modules[OpenIndex].warning;
 
   Self.E_Type.Text := modules[OpenIndex].typ;
 

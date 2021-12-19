@@ -68,7 +68,7 @@ object F_Board: TF_Board
     Height = 25
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 6
+    TabOrder = 8
     OnClick = B_ApplyClick
   end
   object B_Storno: TButton
@@ -77,7 +77,7 @@ object F_Board: TF_Board
     Width = 75
     Height = 25
     Caption = 'Storno'
-    TabOrder = 7
+    TabOrder = 9
     OnClick = B_StornoClick
   end
   object E_FW: TEdit
@@ -87,35 +87,13 @@ object F_Board: TF_Board
     Height = 21
     TabOrder = 2
   end
-  object RG_Exists: TRadioGroup
-    Left = 8
-    Top = 124
-    Width = 217
-    Height = 64
-    Caption = ' Existence '
-    Items.Strings = (
-      'Ne'
-      'Ano')
-    TabOrder = 3
-  end
-  object RG_Failure: TRadioGroup
-    Left = 8
-    Top = 194
-    Width = 217
-    Height = 64
-    Caption = ' Porucha '
-    Items.Strings = (
-      'Ne'
-      'Ano')
-    TabOrder = 4
-  end
   object GB_IO_type: TGroupBox
     Left = 231
     Top = 8
     Width = 178
     Height = 305
     Caption = ' Typy vstup'#367' a v'#253'stup'#367' '
-    TabOrder = 5
+    TabOrder = 7
     object CHB_IR0: TCheckBox
       Left = 16
       Top = 16
@@ -409,5 +387,37 @@ object F_Board: TF_Board
     Width = 145
     Height = 21
     TabOrder = 1
+  end
+  object CHB_Exists: TCheckBox
+    Left = 8
+    Top = 124
+    Width = 193
+    Height = 17
+    Caption = 'Existence (pozor: nem'#283'nit za b'#283'hu)'
+    TabOrder = 3
+  end
+  object CHB_failure: TCheckBox
+    Left = 8
+    Top = 147
+    Width = 177
+    Height = 17
+    Caption = 'Failure (nep'#345#237'tomen na sb'#283'rnici)'
+    TabOrder = 4
+  end
+  object CHB_Error: TCheckBox
+    Left = 8
+    Top = 170
+    Width = 136
+    Height = 17
+    Caption = 'Error (modul hl'#225's'#237' chybu)'
+    TabOrder = 5
+  end
+  object CHB_Warning: TCheckBox
+    Left = 8
+    Top = 193
+    Width = 177
+    Height = 17
+    Caption = 'Warning (modul hl'#225's'#237' varov'#225'n'#237')'
+    TabOrder = 6
   end
 end

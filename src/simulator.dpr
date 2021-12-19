@@ -41,8 +41,8 @@ uses
 {$R *.res}
 
 const
-  API_SUPPORTED_VERSIONS: array [0 .. 0] of Cardinal = ($0401 // v1.4
-    );
+  // v1.4, v1.5
+  API_SUPPORTED_VERSIONS: array [0 .. 1] of Cardinal = ($0401, $0501);
 
 type
   TAddr = 0 .. 255;
@@ -51,8 +51,8 @@ var
   // this timer simulates delays on open, close, start, stop
   t_event: TTimer;
 
-  /// /////////////////////////////////////////////////////////////////////////////
-  // Simple timer activation function:
+/// /////////////////////////////////////////////////////////////////////////////
+// Simple timer activation function:
 
 procedure ActivateTimer(callback: TNotifyEvent; interval: Integer);
 begin
@@ -148,7 +148,7 @@ begin
 
   for var i := 0 to _MAX_MTB do
     modules[i].failure := false;
-  F_Board.RG_Failure.ItemIndex := 0;
+  F_Board.CHB_failure.Checked := false;
 
   try
     if (Assigned(LibEvents.BeforeOpen.event)) then
@@ -220,10 +220,6 @@ begin
       LibEvents.BeforeStart.event(FormConfig, LibEvents.BeforeStart.data);
     FormConfig.Status := TSimulatorStatus.starting;
 
-    if ((F_Board.Showing) and (modules[F_Board.OpenIndex].exists)) then
-      F_Board.RG_Exists.Enabled := false;
-    F_Board.RG_Failure.Enabled := false;
-
     ActivateTimer(FormConfig.OnStart, 500);
     Result := 0;
   except
@@ -243,7 +239,6 @@ begin
     if (Assigned(LibEvents.BeforeStop.event)) then
       LibEvents.BeforeStop.event(FormConfig, LibEvents.BeforeStop.data);
     FormConfig.Status := TSimulatorStatus.stopping;
-    F_Board.RG_Failure.Enabled := false;
     ActivateTimer(FormConfig.OnStop, 500);
     Result := 0;
   except
@@ -384,6 +379,28 @@ begin
 
   if (FormConfig.Status >= TSimulatorStatus.stopped) then
     Result := modules[module].failure
+  else
+    Result := false;
+end;
+
+function IsModuleWarning(module: Cardinal): boolean; stdcall;
+begin
+  if (not InRange(module, Low(TAddr), High(TAddr))) then
+    Exit(false);
+
+  if (FormConfig.Status >= TSimulatorStatus.stopped) then
+    Result := modules[module].warning
+  else
+    Result := false;
+end;
+
+function IsModuleError(module: Cardinal): boolean; stdcall;
+begin
+  if (not InRange(module, Low(TAddr), High(TAddr))) then
+    Exit(false);
+
+  if (FormConfig.Status >= TSimulatorStatus.stopped) then
+    Result := modules[module].error
   else
     Result := false;
 end;
@@ -562,6 +579,12 @@ begin
   LibEvents.OnOutputChanged.event := event;
 end;
 
+procedure BindOnModuleChanged(event: TStdModuleChangeEvent; data: Pointer); stdcall;
+begin
+  LibEvents.OnModuleChanged.data := data;
+  LibEvents.OnModuleChanged.event := event;
+end;
+
 procedure BindOnScanned(event: TStdNotifyEvent; data: Pointer); stdcall;
 begin
   LibEvents.OnScanned.data := data;
@@ -587,12 +610,13 @@ exports
   Open, OpenDevice, Close, Opened, Start, Stop, Started,
   GetInput, GetOutput, SetOutput,
   GetDeviceCount, GetDeviceSerial,
-  IsModule, IsModuleFailure, GetModuleCount, GetMaxModuleAddr, GetModuleTypeStr,
+  IsModule, IsModuleFailure, IsModuleWarning, IsModuleError,
+  GetModuleCount, GetMaxModuleAddr, GetModuleTypeStr,
   GetModuleName, GetModuleFW, GetModuleInputsCount, GetModuleOutputsCount,
   ApiSupportsVersion, ApiSetVersion, GetDeviceVersion, GetDriverVersion,
   BindBeforeOpen, BindAfterOpen, BindBeforeClose, BindAfterClose,
   BindBeforeStart, BindAfterStart, BindBeforeStop, BindAfterStop,
-  BindOnError, BindOnLog, BindOnInputChanged, BindOnOutputChanged,
+  BindOnError, BindOnLog, BindOnInputChanged, BindOnOutputChanged, BindOnModuleChanged,
   BindOnScanned, SetInput, GetInputType, GetOutputType,
   IsSimulation;
 
