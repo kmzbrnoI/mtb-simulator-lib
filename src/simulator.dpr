@@ -33,10 +33,11 @@ uses
   Forms,
   Classes,
   IniFiles,
-  fConfig in 'fConfig.pas' {FormConfig} ,
-  Board in 'Board.pas' {F_Board} ,
+  fConfig in 'fConfig.pas' {FormConfig},
+  Board in 'Board.pas' {F_Board},
   LibraryEvents in 'LibraryEvents.pas',
-  Errors in 'Errors.pas';
+  Errors in 'Errors.pas',
+  version in 'version.pas';
 
 {$R *.res}
 
