@@ -109,7 +109,7 @@ var
 
 implementation
 
-uses Board, LibraryEvents;
+uses Board, LibraryEvents, version;
 
 {$R *.dfm}
 
@@ -133,6 +133,7 @@ begin
 
   Self.CreatePins();
   Self.Status := TSimulatorStatus.closed;
+  Self.Caption := 'RCS Simulator v' + VersionStr(GetModuleName(HInstance));
 end;
 
 procedure TFormConfig.FormDestroy(Sender: TObject);
