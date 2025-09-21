@@ -494,7 +494,7 @@ function GetDeviceVersion(version: PChar; versionLen: Cardinal): Integer; stdcal
 begin
   if (FormConfig.Status >= TSimulatorStatus.stopped) then
   begin
-    StrPLCopy(version, 'MTB-SIMULATOR-V', versionLen);
+    StrPLCopy(version, 'no device', versionLen);
     Result := 0;
   end
   else
@@ -503,7 +503,7 @@ end;
 
 procedure GetDriverVersion(version: PChar; versionLen: Cardinal); stdcall;
 begin
-  StrPLCopy(version, 'SIMULATOR-DRIVER-V', versionLen);
+  StrPLCopy(version, VersionStr(SysUtils.GetModuleName(HInstance)), versionLen);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
